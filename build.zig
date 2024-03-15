@@ -1,5 +1,6 @@
 const std = @import("std");
 const mach = @import("mach");
+const zigimg = @import("zigimg");
 
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
@@ -24,12 +25,34 @@ pub fn build(b: *std.Build) !void {
         // pulling in unneccessary dependencies.
         .core = true,
     });
+
+    const zigimg_dep = b.dependency("zigimg", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const ecs_dep = b.dependency("zig-ecs", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // This is a list of dependencies for the app. Add anything you want the app to be able to @import
+    var deps = std.ArrayList(std.Build.Module.Import).init(b.allocator);
+    try deps.append(std.Build.Module.Import{
+        .name = "zigimg",
+        .module = zigimg_dep.module("zigimg"),
+    });
+    try deps.append(std.Build.Module.Import{
+        .name = "zig-ecs",
+        .module = ecs_dep.module("zig-ecs"),
+    });
+
     const app = try mach.CoreApp.init(b, mach_dep.builder, .{
         .name = "myapp",
         .src = "src/main.zig",
         .target = target,
         .optimize = optimize,
-        .deps = &[_]std.Build.Module.Import{},
+        .deps = deps.items,
     });
     if (b.args) |args| app.run.addArgs(args);
 

@@ -3,6 +3,7 @@
     .version = "0.1.0",
     .paths = .{
         "src",
+        "assets",
         "build.zig",
         "build.zig.zon",
         "README.md",
@@ -11,6 +12,14 @@
         .mach = .{
             .url = "https://pkg.machengine.org/mach/279290bbf2f1adab0af00323280a07d6bfff47a5.tar.gz",
             .hash = "1220ba5472217ef81455b19d540967049bbfaf768b30d04534865707e907ee1c4aec",
+        },
+        .zigimg = .{
+            .url = "https://github.com/zigimg/zigimg/archive/8873f29fc449e1b63400e9f4ad86d3c76204f962.tar.gz",
+            .hash = "122019f6439545235af116d0d8eb81fde1ff05fdb070da57c723772c557f84c5bf39",
+        },
+        .@"zig-ecs" = .{
+            .url = "https://github.com/prime31/zig-ecs/archive/2074d6828aec9815a46bc04bf464fa343938d1b9.tar.gz",
+            .hash = "1220d37b0d55367844ca39af500afe4c1d679ba04db68bcde9f54d3a71a5a6e2e678",
         },
     },
 }
