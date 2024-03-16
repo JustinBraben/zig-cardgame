@@ -33,6 +33,10 @@ pub fn init(app: *App) !void {
 
     state = try GameState.init(allocator);
 
+    const base_folder = try std.fs.realpathAlloc(allocator, "../../");
+    defer allocator.free(base_folder);
+    std.debug.print("base folder : {s}\n", .{base_folder});
+
     const cards_json_path = try std.fs.realpathAlloc(allocator, "../../assets/cards_data.json");
     defer allocator.free(cards_json_path);
     const sprites_file = try std.fs.cwd().openFile(cards_json_path, . { .mode = .read_only});
@@ -72,7 +76,7 @@ pub fn init(app: *App) !void {
 
     const cards_png_path = try std.fs.realpathAlloc(allocator, "../../assets/cards.png");
     defer allocator.free(cards_png_path);
-    std.debug.print("cards png path : {s}\n", .{cards_png_path});
+    // std.debug.print("cards png path : {s}\n", .{cards_png_path});
 
     var img = try zigimg.Image.fromFilePath(allocator, cards_png_path);
     std.debug.print("img width : {}, height : {}\n", .{img.width, img.height});
