@@ -1,5 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const log = std.log.scoped(.texture);
 const assert = std.debug.assert;
 const zigimg = @import("zigimg");
 
@@ -27,6 +28,7 @@ pub const Texture = struct {
 
     pub fn create(allocator: Allocator, image: zigimg.Image, options: Texture.TextureOptions) !Texture {
         const img_size = gpu.Extent3D{ .width = @as(u32, @intCast(image.width)), .height = @as(u32, @intCast(image.height)) };
+        std.debug.print("img width : {}, height : {}\n", .{img_size.width, img_size.height});
 
         const texture_descriptor = .{
             .size = img_size,
@@ -65,8 +67,6 @@ pub const Texture = struct {
             },
             else => @panic("unsupported image color format"),
         }
-
-        // queue.writeTexture(&.{ .texture = texture }, &data_layout, &image_size, image.data);
 
         const sampler_descriptor = .{
             .address_mode_u = options.address_mode,

@@ -1,8 +1,12 @@
 const std = @import("std");
+const log = std.log.scoped(.main);
 const core = @import("mach").core;
 const gpu = core.gpu;
 const zigimg = @import("zigimg");
 const GameState = @import("game_state.zig").GameState;
+const Components =  @import("ecs/components.zig");
+const Position = Components.Position;
+const CardSuit = Components.CardSuit;
 
 pub const App = @This();
 
@@ -21,6 +25,7 @@ const JSONData = struct {
 };
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
+timer: core.Timer,
 title_timer: core.Timer,
 pipeline: *gpu.RenderPipeline,
 
@@ -36,6 +41,14 @@ pub fn init(app: *App) !void {
     std.debug.print("base folder : {s}\n", .{base_folder});
 
     state = try GameState.init(allocator);
+    // std.debug.print("texture keys : {any}", .{state.asset_manager.texture_map.keys()});
+    
+    var view = state.world.view(.{ Position, CardSuit }, .{});
+    var iter = view.entityIterator();
+    while (iter.next()) |entity| {
+        const position = view.getConst(Position, entity);
+        std.debug.print("Position : {any}\n", .{position});
+    }
 
     const cards_json_path = try std.fs.realpathAlloc(allocator, "../../assets/cards_data.json");
     defer allocator.free(cards_json_path);
@@ -72,15 +85,11 @@ pub fn init(app: *App) !void {
     };
     const pipeline = core.device.createRenderPipeline(&pipeline_descriptor);
 
-    app.* = .{ .title_timer = try core.Timer.start(), .pipeline = pipeline };
-
-    const cards_png_path = try std.fs.realpathAlloc(allocator, "../../assets/cards.png");
-    defer allocator.free(cards_png_path);
-    // std.debug.print("cards png path : {s}\n", .{cards_png_path});
-
-    var img = try zigimg.Image.fromFilePath(allocator, cards_png_path);
-    std.debug.print("img width : {}, height : {}\n", .{img.width, img.height});
-    defer img.deinit();
+    app.* = .{ 
+        .timer = try core.Timer.start(),
+        .title_timer = try core.Timer.start(),
+        .pipeline = pipeline 
+    };
 }
 
 pub fn deinit(app: *App) void {
@@ -90,6 +99,10 @@ pub fn deinit(app: *App) void {
 }
 
 pub fn update(app: *App) !bool {
+
+    state.delta_time = app.timer.lap();
+    state.game_time += state.delta_time;
+
     var iter = core.pollEvents();
     while (iter.next()) |event| {
         switch (event) {
