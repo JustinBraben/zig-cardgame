@@ -3,6 +3,7 @@ const log = std.log.scoped(.main);
 const core = @import("mach").core;
 const gpu = core.gpu;
 const zigimg = @import("zigimg");
+const zmath = @import("zmath");
 const GameState = @import("game_state.zig").GameState;
 const Components =  @import("ecs/components.zig");
 const Position = Components.Position;
@@ -10,6 +11,10 @@ const CardSuit = Components.CardSuit;
 pub const gfx = @import("gfx/gfx.zig");
 
 pub const shaders = @import("shaders.zig");
+
+pub const UniformBufferObject = struct {
+    mvp: zmath.Mat,
+};
 
 pub const App = @This();
 
@@ -98,32 +103,7 @@ pub fn update(app: *App) !bool {
         }
     }
 
-    // const queue = core.queue;
-    // const back_buffer_view = core.swap_chain.getCurrentTextureView().?;
-    // const color_attachment = gpu.RenderPassColorAttachment{
-    //     .view = back_buffer_view,
-    //     .clear_value = std.mem.zeroes(gpu.Color),
-    //     .load_op = .clear,
-    //     .store_op = .store,
-    // };
-
-    // const encoder = core.device.createCommandEncoder(null);
-    // const render_pass_info = gpu.RenderPassDescriptor.init(.{
-    //     .color_attachments = &.{color_attachment},
-    // });
-    // const pass = encoder.beginRenderPass(&render_pass_info);
-    // pass.setPipeline(app.pipeline);
-    // pass.draw(3, 1, 0, 0);
-    // pass.end();
-    // pass.release();
-
-    // var command = encoder.finish(null);
-    // encoder.release();
-
-    // queue.submit(&[_]*gpu.CommandBuffer{command});
-    // command.release();
-    // core.swap_chain.present();
-    // back_buffer_view.release();
+    try app.render();
 
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {
@@ -135,4 +115,57 @@ pub fn update(app: *App) !bool {
     }
 
     return false;
+}
+
+fn render(app: *App) !void {
+    if (core.swap_chain.getCurrentTextureView()) |back_buffer_view|{
+            const color_attachment = gpu.RenderPassColorAttachment{
+            .view = back_buffer_view,
+            // sky blue background color:
+            .clear_value = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
+            .load_op = .clear,
+            .store_op = .store,
+        };
+
+        const encoder = core.device.createCommandEncoder(null);
+        const render_pass_info = gpu.RenderPassDescriptor.init(.{
+            .color_attachments = &.{ color_attachment },
+        });
+
+        const proj = zmath.orthographicRh(
+            @as(f32, @floatFromInt(core.size().width)),
+            @as(f32, @floatFromInt(core.size().height)),
+            0.1,
+            1000,
+        );
+        const view = zmath.lookAtRh(
+            zmath.Vec{ 0, 1000, 0, 1 },
+            zmath.Vec{ 0, 0, 0, 1 },
+            zmath.Vec{ 0, 0, 1, 0 },
+        );
+        const mvp = zmath.mul(view, proj);
+        // std.debug.print("MVP: {any}\n", .{mvp});
+        // std.debug.print("Camera : {any}\n", .{state.camera.frameBufferMatrix()});
+        const ubo = UniformBufferObject{
+            .mvp = zmath.transpose(state.camera.frameBufferMatrix()),
+        };
+        _ = ubo;
+
+        // Draw the sprite batch
+        const pass = encoder.beginRenderPass(&render_pass_info);
+        pass.setPipeline(state.pipeline_default);
+        pass.end();
+        pass.release();
+
+        // Submit the frame.
+        var command = encoder.finish(null);
+        encoder.release();
+        const queue = core.queue;
+        queue.submit(&[_]*gpu.CommandBuffer{command});
+        command.release();
+        core.swap_chain.present();
+        back_buffer_view.release();
+
+        _ = app;
+    }
 }

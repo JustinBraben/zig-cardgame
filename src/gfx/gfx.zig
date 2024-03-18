@@ -12,6 +12,7 @@ pub const Animation = @import("animation.zig").Animation;
 pub const Assetmanager = @import("asset_manager.zig").AssetManager;
 pub const Batcher = @import("batcher.zig").Batcher;
 pub const Texture = @import("texture.zig").Texture;
+pub const Camera = @import("Camera.zig").Camera;
 
 pub const UniformBufferObject = struct {
     mvp: zmath.Mat,
