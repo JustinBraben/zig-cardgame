@@ -14,6 +14,7 @@ pub const Camera = struct {
         };
     }
 
+    /// Use this matrix when drawing to the framebuffer.
     pub fn frameBufferMatrix(camera: Camera) zmath.Mat {
         const fb_ortho = zmath.orthographicRh(
             @as(f32, @floatFromInt(core.size().width)),
@@ -29,5 +30,18 @@ pub const Camera = struct {
         const fb_scaling = zmath.scaling(camera.zoom, camera.zoom, 1);
         _ = fb_scaling;
         return zmath.mul(view, fb_ortho);
+    }
+
+    /// Use this matrix when drawing to an off-screen render texture.
+    pub fn renderTextureMatrix(camera: Camera) zmath.Mat {
+        const rt_ortho = zmath.orthographicRh(
+            @as(f32, @floatFromInt(core.size().width)),
+            @as(f32, @floatFromInt(core.size().height)),
+            0.1,
+            1000,
+        );
+        const rt_translation = zmath.translation(-camera.position[0], -camera.position[1], 0);
+
+        return zmath.mul(rt_translation, rt_ortho);
     }
 };

@@ -21,6 +21,7 @@ pub const GameState = struct {
     game_time: f32 = 0.0,
     world: *Registry = undefined,
     prefabs: Prefabs = undefined,
+    batcher: gfx.Batcher = undefined,
     camera: gfx.Camera = undefined,
     pipeline_default: *gpu.RenderPipeline = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
@@ -43,6 +44,7 @@ pub const GameState = struct {
         //     std.debug.print("Position : {any}\n", .{position});
         // }
 
+        self.batcher = try gfx.Batcher.init(allocator, 128);
         self.camera = gfx.Camera.init(zmath.f32x4s(0));
 
         try gfx.init(self);
