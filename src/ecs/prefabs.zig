@@ -16,9 +16,13 @@ pub const Prefabs = struct {
     }
 
     pub fn create(self: *Prefabs, world: *Registry) void {
-        const entity = world.create();
-        world.add(entity, Position{.x = 0, .y = 0});
-        world.add(entity, CardSuit.Hearts);
+        const c1 = world.create();
+        world.add(c1, Position{.x = 0, .y = 0});
+        world.add(c1, CardSuit.Hearts);
+
+        const c2 = world.create();
+        world.add(c2, Position{.x = 1, .y = 1});
+        world.add(c2, CardSuit.Spades);
 
         _ = self;
     }

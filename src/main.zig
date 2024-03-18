@@ -47,7 +47,8 @@ pub fn init(app: *App) !void {
     var iter = view.entityIterator();
     while (iter.next()) |entity| {
         const position = view.getConst(Position, entity);
-        std.debug.print("Position : {any}\n", .{position});
+        const card_suit = view.getConst(CardSuit, entity);
+        std.debug.print("Position : {any}, CardSuit : {any}\n", .{position, card_suit});
     }
 
     const cards_json_path = try std.fs.realpathAlloc(allocator, "../../assets/cards_data.json");
