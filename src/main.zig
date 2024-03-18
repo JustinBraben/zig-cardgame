@@ -31,11 +31,11 @@ pub fn init(app: *App) !void {
     core.setFrameRateLimit(60);
     const allocator = gpa.allocator();
 
-    state = try GameState.init(allocator);
-
     const base_folder = try std.fs.realpathAlloc(allocator, "../../");
     defer allocator.free(base_folder);
     std.debug.print("base folder : {s}\n", .{base_folder});
+
+    state = try GameState.init(allocator);
 
     const cards_json_path = try std.fs.realpathAlloc(allocator, "../../assets/cards_data.json");
     defer allocator.free(cards_json_path);

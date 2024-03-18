@@ -15,7 +15,7 @@ pub const GameState = struct {
     pipeline_default: *gpu.RenderPipeline = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
     uniform_buffer_default: *gpu.Buffer = undefined,
-    asset_manager: AssetManager = undefined,
+    asset_manager: *AssetManager = undefined,
 
     pub fn init(allocator: Allocator) !*GameState {
         var self = try allocator.create(GameState);
@@ -25,6 +25,7 @@ pub const GameState = struct {
     }
 
     pub fn deinit(self: *GameState) void {
+        self.asset_manager.deinit();
         self.allocator.destroy(self);
     }
 };
