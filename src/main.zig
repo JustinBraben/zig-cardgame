@@ -132,18 +132,19 @@ fn render(app: *App) !void {
             .color_attachments = &.{ color_attachment },
         });
 
-        const proj = zmath.orthographicRh(
-            @as(f32, @floatFromInt(core.size().width)),
-            @as(f32, @floatFromInt(core.size().height)),
-            0.1,
-            1000,
-        );
-        const view = zmath.lookAtRh(
-            zmath.Vec{ 0, 1000, 0, 1 },
-            zmath.Vec{ 0, 0, 0, 1 },
-            zmath.Vec{ 0, 0, 1, 0 },
-        );
-        const mvp = zmath.mul(view, proj);
+        // const proj = zmath.orthographicRh(
+        //     @as(f32, @floatFromInt(core.size().width)),
+        //     @as(f32, @floatFromInt(core.size().height)),
+        //     0.1,
+        //     1000,
+        // );
+        // const view = zmath.lookAtRh(
+        //     zmath.Vec{ 0, 1000, 0, 1 },
+        //     zmath.Vec{ 0, 0, 0, 1 },
+        //     zmath.Vec{ 0, 0, 1, 0 },
+        // );
+        // const mvp = zmath.mul(view, proj);
+        // _ = mvp;
         // std.debug.print("MVP: {any}\n", .{mvp});
         // std.debug.print("Camera : {any}\n", .{state.camera.frameBufferMatrix()});
         const ubo = UniformBufferObject{
