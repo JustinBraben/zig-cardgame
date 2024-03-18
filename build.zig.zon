@@ -3,6 +3,7 @@
     .version = "0.1.0",
     .paths = .{
         "src",
+        "libs",
         "assets",
         "build.zig",
         "build.zig.zon",
@@ -21,5 +22,8 @@
             .url = "https://github.com/prime31/zig-ecs/archive/2074d6828aec9815a46bc04bf464fa343938d1b9.tar.gz",
             .hash = "1220d37b0d55367844ca39af500afe4c1d679ba04db68bcde9f54d3a71a5a6e2e678",
         },
+        .zmath = .{
+            .path = "libs/zig-gamedev/zmath",
+        }
     },
 }

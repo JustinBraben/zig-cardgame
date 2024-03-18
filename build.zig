@@ -36,6 +36,11 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
+    const zmath_dep = b.dependency("zmath", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
     // This is a list of dependencies for the app. Add anything you want the app to be able to @import
     var deps = std.ArrayList(std.Build.Module.Import).init(b.allocator);
     try deps.append(std.Build.Module.Import{
@@ -45,6 +50,10 @@ pub fn build(b: *std.Build) !void {
     try deps.append(std.Build.Module.Import{
         .name = "zig-ecs",
         .module = ecs_dep.module("zig-ecs"),
+    });
+    try deps.append(std.Build.Module.Import{
+        .name = "zmath",
+        .module = zmath_dep.module("zmath"),
     });
 
     const app = try mach.CoreApp.init(b, mach_dep.builder, .{

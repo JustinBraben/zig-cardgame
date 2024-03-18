@@ -6,7 +6,5 @@ const core = @import("mach").core;
 const gpu = core.gpu;
 
 pub const Batcher = struct {
-    allocator: Allocator,
-    encoder: ?*gpu.CommandEncoder,
-    vertices
+    
 };

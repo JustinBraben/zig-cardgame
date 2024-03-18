@@ -10,6 +10,7 @@ const Components =  @import("ecs/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const Prefabs = @import("ecs/prefabs.zig").Prefabs;
+pub const gfx = @import("gfx/gfx.zig");
 
 const assets_directory = "../../assets";
 
@@ -39,6 +40,8 @@ pub const GameState = struct {
         //     const position = view.getConst(Position, entity);
         //     std.debug.print("Position : {any}\n", .{position});
         // }
+
+        try gfx.init(self);
 
         return self;
     }
