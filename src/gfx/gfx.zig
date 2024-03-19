@@ -10,15 +10,15 @@ const game = @import("../main.zig");
 
 pub const Animation = @import("animation.zig").Animation;
 pub const Assetmanager = @import("asset_manager.zig").AssetManager;
+pub const Sprite = @import("sprite.zig").Sprite;
+pub const Quad = @import("quad.zig").Quad;
 pub const Batcher = @import("batcher.zig").Batcher;
 pub const Texture = @import("texture.zig").Texture;
 pub const Camera = @import("Camera.zig").Camera;
 
 pub const Vertex = struct {
-    position: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
-    uv: [2]f32 = [_]f32{ 0.0, 0.0 },
-    color: [4]f32 = [_]f32{ 1.0, 1.0, 1.0, 1.0 },
-    data: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
+    pos: @Vector(2, f32),
+    uv: @Vector(2, f32),
 };
 
 pub const UniformBufferObject = struct {
@@ -27,8 +27,18 @@ pub const UniformBufferObject = struct {
 
 pub fn init(state: *GameState) !void {
     const default_shader_module = core.device.createShaderModuleWGSL("shader.wgsl", game.shaders.default);
-
     defer default_shader_module.release();
+
+    const vertex_attributes = [_]gpu.VertexAttribute{
+        .{ .format = .float32x4, .offset = @offsetOf(Vertex, "pos"), .shader_location = 0 },
+        .{ .format = .float32x2, .offset = @offsetOf(Vertex, "uv"), .shader_location = 1 },
+    };
+    const vertex_buffer_layout = gpu.VertexBufferLayout.init(.{
+        .array_stride = @sizeOf(Vertex),
+        .step_mode = .vertex,
+        .attributes = &vertex_attributes,
+    });
+    _ = vertex_buffer_layout;
 
     const blend = gpu.BlendState{
         .color = .{
