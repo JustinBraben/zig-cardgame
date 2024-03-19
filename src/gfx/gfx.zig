@@ -65,7 +65,7 @@ pub fn init(state: *GameState) !void {
         .targets = &.{color_target},
     });
 
-    const pipeline_descriptor = gpu.RenderPipeline.Descriptor{
+    const default_pipeline_descriptor = gpu.RenderPipeline.Descriptor{
         .fragment = &default_fragment,
         .vertex = gpu.VertexState.init(.{
             .module = default_shader_module,
@@ -73,7 +73,7 @@ pub fn init(state: *GameState) !void {
         })
     };
 
-    state.pipeline_default = core.device.createRenderPipeline(&pipeline_descriptor);
+    state.pipeline_default = core.device.createRenderPipeline(&default_pipeline_descriptor);
 
     state.uniform_buffer_default = core.device.createBuffer(&.{
         .usage = .{ .copy_dst = true, .uniform = true },
@@ -92,11 +92,10 @@ pub fn init(state: *GameState) !void {
     //     &gpu.BindGroup.Descriptor.init(.{
     //         .layout = pipeline_layout_default,
     //         .entries = &.{
-    //             gpu.BindGroup.Entry.buffer(0, uniform_buffer, 0, @sizeOf(UniformBufferObject)),
+    //             gpu.BindGroup.Entry.buffer(0, state.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
+    //             gpu.BindGroup.Entry.textureView(1, texture_view),
     //             gpu.BindGroup.Entry.sampler(1, sampler),
-    //             gpu.BindGroup.Entry.textureView(2, texture_view),
-    //             gpu.BindGroup.Entry.buffer(3, sprites_buffer, 0, @sizeOf(Sprite) * app.sprites.items.len),
     //         }
     //     })
-    // )
+    // );
 }

@@ -42,7 +42,8 @@ pub const AssetManager = struct {
                 defer self.allocator.free(full_path);
                 // std.debug.print("full path : {s}\n", .{full_path});
                 // std.debug.print("file path : {s}, base : {s}\n", .{file.path, file.basename});
-                try self.texture_map.put(try self.allocator.dupe(u8, file.basename), try Texture.loadFromFilePath(self.allocator, full_path, .{}));
+                var trimmed_basename = std.mem.splitScalar(u8, file.basename, '.');
+                try self.texture_map.put(try self.allocator.dupe(u8, trimmed_basename.first()), try Texture.loadFromFilePath(self.allocator, full_path, .{}));
             }
         }
     }
