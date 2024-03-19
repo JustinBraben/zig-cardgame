@@ -7,7 +7,7 @@ const ecs = @import("zig-ecs");
 const zmath = @import("zmath");
 const Registry = ecs.Registry;
 const AssetManager = @import("gfx/asset_manager.zig").AssetManager;
-const Components =  @import("ecs/components.zig");
+const Components = @import("ecs/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const Prefabs = @import("ecs/prefabs.zig").Prefabs;
@@ -35,7 +35,9 @@ pub const GameState = struct {
         self.world.* = Registry.init(allocator);
         self.prefabs = try Prefabs.init(allocator);
         self.prefabs.create(self.world);
-        self.asset_manager = try AssetManager.initFromDirectory(allocator, assets_directory);
+        self.asset_manager = try allocator.create(AssetManager);
+        self.asset_manager.* = try AssetManager.init(allocator);
+        try self.asset_manager.fillTextureMap(assets_directory);
 
         // var view = self.world.view(.{ Position, CardSuit }, .{});
         // var iter = view.entityIterator();

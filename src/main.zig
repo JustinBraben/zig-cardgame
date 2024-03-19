@@ -5,7 +5,7 @@ const gpu = core.gpu;
 const zigimg = @import("zigimg");
 const zmath = @import("zmath");
 const GameState = @import("game_state.zig").GameState;
-const Components =  @import("ecs/components.zig");
+const Components = @import("ecs/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 pub const gfx = @import("gfx/gfx.zig");
@@ -48,11 +48,11 @@ pub fn init(app: *App) !void {
     std.debug.print("base folder : {s}\n", .{base_folder});
 
     state = try GameState.init(allocator);
-    // std.debug.print("texture keys : {any}", .{state.asset_manager.texture_map.keys()});
+    std.debug.print("texture keys : {any}", .{state.asset_manager.texture_map.keys()});
 
     const cards_json_path = try std.fs.realpathAlloc(allocator, "../../assets/cards_data.json");
     defer allocator.free(cards_json_path);
-    const sprites_file = try std.fs.cwd().openFile(cards_json_path, . { .mode = .read_only});
+    const sprites_file = try std.fs.cwd().openFile(cards_json_path, .{ .mode = .read_only });
     defer sprites_file.close();
     const file_size = (try sprites_file.stat()).size;
     const buffer = try allocator.alloc(u8, file_size);
@@ -70,7 +70,7 @@ pub fn init(app: *App) !void {
         state.world.add(entity, CardSuit.Diamonds);
     }
 
-    app.* = .{ 
+    app.* = .{
         .timer = try core.Timer.start(),
         .title_timer = try core.Timer.start(),
     };
@@ -80,7 +80,7 @@ pub fn init(app: *App) !void {
     while (iter.next()) |entity| {
         const position = view.getConst(Position, entity);
         const card_suit = view.getConst(CardSuit, entity);
-        std.debug.print("Position : {any}, CardSuit : {any}\n", .{position, card_suit});
+        std.debug.print("Position : {any}, CardSuit : {any}\n", .{ position, card_suit });
     }
 }
 
@@ -91,7 +91,6 @@ pub fn deinit(app: *App) void {
 }
 
 pub fn update(app: *App) !bool {
-
     state.delta_time = app.timer.lap();
     state.game_time += state.delta_time;
 
@@ -118,8 +117,8 @@ pub fn update(app: *App) !bool {
 }
 
 fn render(app: *App) !void {
-    if (core.swap_chain.getCurrentTextureView()) |back_buffer_view|{
-            const color_attachment = gpu.RenderPassColorAttachment{
+    if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
+        const color_attachment = gpu.RenderPassColorAttachment{
             .view = back_buffer_view,
             // sky blue background color:
             .clear_value = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
@@ -129,7 +128,7 @@ fn render(app: *App) !void {
 
         const encoder = core.device.createCommandEncoder(null);
         const render_pass_info = gpu.RenderPassDescriptor.init(.{
-            .color_attachments = &.{ color_attachment },
+            .color_attachments = &.{color_attachment},
         });
 
         // const proj = zmath.orthographicRh(
