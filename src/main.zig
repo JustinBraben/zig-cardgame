@@ -73,10 +73,31 @@ pub fn update(app: *App) !bool {
         }
     }
 
-    state.render();
+    //state.render();
+    try state.renderUsingBatch();
 
     // const batcher_commands = try state.batcher.finish();
     // defer batcher_commands.release();
+
+    // if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
+    //     defer back_buffer_view.release();
+
+    //     var encoder = core.device.createCommandEncoder(null);
+
+    //     {
+    //         const color_attachment = gpu.RenderPassColorAttachment{
+    //             .view = back_buffer_view,
+    //             // sky blue background color:
+    //             .clear_value = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
+    //             .load_op = .clear,
+    //             .store_op = .store,
+    //         };
+
+    //         const render_pass_info = gpu.RenderPassDescriptor.init(.{
+    //             .color_attachments = &.{color_attachment},
+    //         });
+    //     }
+    // }
 
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {

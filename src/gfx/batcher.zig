@@ -37,7 +37,7 @@ pub const Batcher = struct {
         // If output handle is null, render to the back buffer
         // otherwise, render to offscreen texture view handle
         output_handle: ?*gpu.TextureView = null,
-        clear_color: gpu.Color = .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0 },
+        clear_color: gpu.Color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
     };
 
     /// Describes the current state of the Batcher
@@ -198,10 +198,10 @@ pub const Batcher = struct {
             defer back_buffer_view.release();
 
             const color_attachments = [_]core.gpu.RenderPassColorAttachment{.{
-                .view = if (self.context.output_handle) |out_handle| out_handle else back_buffer_view,
+                .view = back_buffer_view,
                 .load_op = .clear,
-                .store_op = .store,
                 .clear_value = self.context.clear_color,
+                .store_op = .store,
             }};
 
             const render_pass_info = core.gpu.RenderPassDescriptor{
@@ -211,25 +211,27 @@ pub const Batcher = struct {
 
             encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
 
-            const pass = encoder.beginRenderPass(&render_pass_info);
+            const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
             defer {
-                pass.end();
-                pass.release();
+                batcherRenderPass.end();
+                batcherRenderPass.release();
             }
 
-            pass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
-            pass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
+            // pass.setVertexBuffer(0, self.vertex_buffer_default, 0, @sizeOf(Vertex) * vertices.len);
+            // pass.setIndexBuffer(self.index_buffer_default, .uint32, 0, @sizeOf(u32) * index_data.len);
+            // pass.setBindGroup(0, self.bind_group_default, &.{});
+            // pass.drawIndexed(index_data.len, 1, 0, 0, 0);
 
-            pass.setPipeline(self.context.pipeline_handle);
-
+            batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
+            batcherRenderPass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
+            batcherRenderPass.setPipeline(self.context.pipeline_handle);
             if (uniforms_fields_info.len > 0) {
-                pass.setBindGroup(0, self.context.bind_group_handle, &.{});
+                batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
             } else {
-                pass.setBindGroup(0, self.context.bind_group_handle, null);
+                batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, null);
             }
-
             // Draw only the quads appended this cycle
-            pass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, @as(u32, @intCast(self.start_count * 6)), 0, 0);
+            batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, @as(u32, @intCast(self.start_count * 6)), 0, 0);
         }
     }
 

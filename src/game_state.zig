@@ -76,19 +76,20 @@ pub const GameState = struct {
             .blend = &blend,
             .write_mask = gpu.ColorWriteMaskFlags.all,
         };
-        const fragment = gpu.FragmentState.init(.{
+        const default_fragment = gpu.FragmentState.init(.{
             .module = shader_module,
             .entry_point = "frag_main",
             .targets = &.{color_target},
         });
+        const default_vertex = gpu.VertexState.init(.{
+            .module = shader_module,
+            .entry_point = "vertex_main",
+            .buffers = &.{vertex_buffer_layout},
+        });
         const pipeline_descriptor = gpu.RenderPipeline.Descriptor{
-            .fragment = &fragment,
-            .vertex = gpu.VertexState.init(.{
-                .module = shader_module,
-                .entry_point = "vertex_main",
-                .buffers = &.{vertex_buffer_layout},
-            }),
-            .primitive = .{ .cull_mode = .back },
+            .fragment = &default_fragment,
+            .vertex = default_vertex,
+            // .primitive = .{ .cull_mode = .back },
         };
         const pipeline = core.device.createRenderPipeline(&pipeline_descriptor);
 
@@ -203,6 +204,31 @@ pub const GameState = struct {
             command.release();
             core.swap_chain.present();
             back_buffer_view.release();
+        }
+    }
+
+    pub fn renderUsingBatch(self: *GameState) !void {
+        if (self.batcher.encoder) |encoder| {
+            const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
+            const uniforms = gfx.UniformBufferObject{
+            .mvp = zmath.transpose(
+                    zmath.orthographicRh(
+                        @as(f32, @floatFromInt(core.size().width)),
+                        @as(f32, @floatFromInt(core.size().height)), 
+                        0.1, 
+                        1000
+                    )
+                ),
+            };
+
+            try self.batcher.begin(.{
+                .pipeline_handle = self.pipeline_default,
+                .bind_group_handle = self.bind_group_default,
+                .output_handle = texture_view,
+                .clear_color = self.batcher.context.clear_color,
+            });
+            try self.batcher.end(uniforms, self.uniform_buffer_default);
+            _ = encoder;
         }
     }
 
