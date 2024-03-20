@@ -48,40 +48,11 @@ pub fn init(app: *App) !void {
     std.debug.print("base folder : {s}\n", .{base_folder});
 
     state = try GameState.init(allocator);
-    std.debug.print("texture keys : {any}", .{state.asset_manager.texture_map.keys()});
-
-    const cards_json_path = try std.fs.realpathAlloc(allocator, "../../assets/cards_data.json");
-    defer allocator.free(cards_json_path);
-    const sprites_file = try std.fs.cwd().openFile(cards_json_path, .{ .mode = .read_only });
-    defer sprites_file.close();
-    const file_size = (try sprites_file.stat()).size;
-    const buffer = try allocator.alloc(u8, file_size);
-    defer allocator.free(buffer);
-    try sprites_file.reader().readNoEof(buffer);
-    const root = try std.json.parseFromSlice(JSONData, allocator, buffer, .{});
-    defer root.deinit();
-
-    for (root.value.sprites) |sprite| {
-        std.log.info("Sprite World Position: {} {}", .{ sprite.world_pos[0], sprite.world_pos[1] });
-        std.log.info("Sprite Texture Position: {} {}", .{ sprite.pos[0], sprite.pos[1] });
-        std.log.info("Sprite Dimensions: {} {}", .{ sprite.size[0], sprite.size[1] });
-        const entity = state.world.create();
-        state.world.add(entity, Position{ .x = sprite.world_pos[0], .y = sprite.world_pos[1] });
-        state.world.add(entity, CardSuit.Diamonds);
-    }
 
     app.* = .{
         .timer = try core.Timer.start(),
         .title_timer = try core.Timer.start(),
     };
-
-    var view = state.world.view(.{ Position, CardSuit }, .{});
-    var iter = view.entityIterator();
-    while (iter.next()) |entity| {
-        const position = view.getConst(Position, entity);
-        const card_suit = view.getConst(CardSuit, entity);
-        std.debug.print("Position : {any}, CardSuit : {any}\n", .{ position, card_suit });
-    }
 }
 
 pub fn deinit(app: *App) void {
@@ -102,12 +73,12 @@ pub fn update(app: *App) !bool {
         }
     }
 
-    try app.render();
+    state.render();
 
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {
         app.title_timer.reset();
-        try core.printTitle("Triangle [ {d}fps ] [ Input {d}hz ]", .{
+        try core.printTitle("Textured quad [ {d}fps ] [ Input {d}hz ]", .{
             core.frameRate(),
             core.inputRate(),
         });
