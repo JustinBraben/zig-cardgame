@@ -73,6 +73,8 @@ pub fn update(app: *App) !bool {
         }
     }
 
+    state.render();
+
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {
         app.title_timer.reset();

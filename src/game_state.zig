@@ -24,10 +24,10 @@ const Vertex = struct {
 };
 
 const vertices = [_]Vertex{
-    .{ .pos = .{ -0.5, -0.5 }, .uv = .{ 1, 1 } },
-    .{ .pos = .{ 0.5, -0.5 }, .uv = .{ 0, 1 } },
-    .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 0, 0 } },
-    .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 1, 0 } },
+    .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 1, 0 } },    // bottom-left
+    .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 0, 0 } },   // bottom-right
+    .{ .pos = .{ -0.5, -0.5 }, .uv = .{ 0, 1 } },  // top-right
+    .{ .pos = .{ 0.5, -0.5 }, .uv = .{ 1, 1 } },   // top-left
 };
 
 const index_data = [_]u32{ 0, 1, 2, 2, 3, 0 };
@@ -162,6 +162,42 @@ pub const GameState = struct {
         self.index_buffer_default = index_buffer;
         self.bind_group_default = bind_group;
         return self;
+    }
+
+    pub fn render(self: *GameState) void {
+        if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
+            // Clear color for the background
+            const color_attachment = gpu.RenderPassColorAttachment{
+                .view = back_buffer_view,
+                // sky blue background color:
+                .clear_value = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
+                .load_op = .clear,
+                .store_op = .store,
+            };
+
+            const encoder = core.device.createCommandEncoder(null);
+            const render_pass_info = gpu.RenderPassDescriptor.init(.{
+                .color_attachments = &.{color_attachment},
+            });
+
+            const pass = encoder.beginRenderPass(&render_pass_info);
+            pass.setPipeline(self.pipeline_default);
+            pass.setVertexBuffer(0, self.vertex_buffer_default, 0, @sizeOf(Vertex) * vertices.len);
+            pass.setIndexBuffer(self.index_buffer_default, .uint32, 0, @sizeOf(u32) * index_data.len);
+            pass.setBindGroup(0, self.bind_group_default, &.{});
+            pass.drawIndexed(index_data.len, 1, 0, 0, 0);
+            pass.end();
+            pass.release();
+
+            var command = encoder.finish(null);
+            encoder.release();
+
+            const queue = core.queue;
+            queue.submit(&[_]*gpu.CommandBuffer{command});
+            command.release();
+            core.swap_chain.present();
+            back_buffer_view.release();
+        }
     }
 
     pub fn deinit(self: *GameState) void {
