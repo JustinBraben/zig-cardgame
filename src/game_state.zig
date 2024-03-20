@@ -41,6 +41,7 @@ pub const GameState = struct {
     vertex_buffer_default: *gpu.Buffer = undefined,
     index_buffer_default: *gpu.Buffer = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
+    default_texture: gfx.Texture = undefined,
     // asset_manager: *AssetManager = undefined,
 
     pub fn init(allocator: Allocator) !*GameState {
@@ -102,58 +103,30 @@ pub const GameState = struct {
         @memcpy(index_mapped.?, index_data[0..]);
         index_buffer.unmap();
 
-        const sampler = core.device.createSampler(&.{ .mag_filter = .linear, .min_filter = .linear });
-        const queue = core.queue;
-
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
         const png_relative_path = "assets/Cards_v2.png";
         const format = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
         const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
         defer self.allocator.free(image_full_path);
-        var img = try zigimg.Image.fromFilePath(allocator, image_full_path);
-        defer img.deinit();
-        const img_size = gpu.Extent3D{
-            .width = @as(u32, @intCast(img.width)),
-            .height = @as(u32, @intCast(img.height)),
-        };
-        const texture = core.device.createTexture(&.{
-            .size = img_size,
-            .format = .rgba8_unorm,
-            .usage = .{
-                .texture_binding = true,
-                .copy_dst = true,
-                .render_attachment = true,
-            },
-        });
-        const data_layout = gpu.Texture.DataLayout{
-                .bytes_per_row = @as(u32, @intCast(img.width * 4)),
-                .rows_per_image = @as(u32, @intCast(img.height)),
-        };
-        switch (img.pixels) {
-            .rgba32 => |pixels| queue.writeTexture(&.{ .texture = texture }, &data_layout, &img_size, pixels),
-            .rgb24 => |pixels| {
-                const data = try rgb24ToRgba32(allocator, pixels);
-                defer data.deinit(allocator);
-                queue.writeTexture(&.{ .texture = texture }, &data_layout, &img_size, data.rgba32);
-            },
-            else => @panic("unsupported image color format"),
-        }
 
-        const texture_view = texture.createView(&gpu.TextureView.Descriptor{});
-        texture.release();
+        self.default_texture = try gfx.Texture.loadFromFilePath(
+            self.allocator,
+            image_full_path, .{ .format = core.descriptor.format }
+        );
+
+        const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
 
         const bind_group_layout = pipeline.getBindGroupLayout(0);
         const bind_group = core.device.createBindGroup(
             &gpu.BindGroup.Descriptor.init(.{
                 .layout = bind_group_layout,
                 .entries = &.{
-                    gpu.BindGroup.Entry.sampler(0, sampler),
+                    gpu.BindGroup.Entry.sampler(0, self.default_texture.sampler_handle),
                     gpu.BindGroup.Entry.textureView(1, texture_view),
                 },
             }),
         );
-        sampler.release();
         texture_view.release();
         bind_group_layout.release();
 
@@ -205,6 +178,7 @@ pub const GameState = struct {
         self.vertex_buffer_default.release();
         self.index_buffer_default.release();
         self.bind_group_default.release();
+        self.default_texture.deinit();
         self.allocator.destroy(self);
     }
 };
