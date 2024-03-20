@@ -75,6 +75,9 @@ pub fn update(app: *App) !bool {
 
     state.render();
 
+    // const batcher_commands = try state.batcher.finish();
+    // defer batcher_commands.release();
+
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {
         app.title_timer.reset();

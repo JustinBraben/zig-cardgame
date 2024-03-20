@@ -23,6 +23,10 @@ const Vertex = struct {
     uv: @Vector(2, f32),
 };
 
+pub const UniformBufferObject = struct {
+    mvp: zmath.Mat,
+};
+
 const vertices = [_]Vertex{
     .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 1, 0 } },    // bottom-left
     .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 0, 0 } },   // bottom-right
@@ -41,7 +45,10 @@ pub const GameState = struct {
     vertex_buffer_default: *gpu.Buffer = undefined,
     index_buffer_default: *gpu.Buffer = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
+    uniform_buffer_default: *gpu.Buffer = undefined,
+    batcher: gfx.Batcher = undefined,
     default_texture: gfx.Texture = undefined,
+
     // asset_manager: *AssetManager = undefined,
 
     pub fn init(allocator: Allocator) !*GameState {
@@ -127,6 +134,32 @@ pub const GameState = struct {
                 },
             }),
         );
+
+        self.uniform_buffer_default = core.device.createBuffer(&.{
+            .usage = . { .copy_dst = true, .uniform = true},
+            .size = @sizeOf(UniformBufferObject),
+            .mapped_at_creation = .false,
+        });
+        const uniforms = gfx.UniformBufferObject{
+            .mvp = zmath.transpose(
+                zmath.orthographicRh(
+                    @as(f32, @floatFromInt(core.size().width)),
+                    @as(f32, @floatFromInt(core.size().height)), 
+                    0.1, 
+                    1000
+                )
+            ),
+        };
+
+        self.batcher = try gfx.Batcher.init(allocator, 128);
+        try self.batcher.begin(.{
+            .pipeline_handle = pipeline,
+            .bind_group_handle = bind_group,
+            .output_handle = texture_view,
+            .clear_color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
+        });
+        try self.batcher.texture(zmath.f32x4s(0), &self.default_texture, .{});
+        try self.batcher.end(uniforms, self.uniform_buffer_default);
         texture_view.release();
         bind_group_layout.release();
 
@@ -178,7 +211,9 @@ pub const GameState = struct {
         self.vertex_buffer_default.release();
         self.index_buffer_default.release();
         self.bind_group_default.release();
+        self.uniform_buffer_default.release();
         self.default_texture.deinit();
+        self.batcher.deinit();
         self.allocator.destroy(self);
     }
 };

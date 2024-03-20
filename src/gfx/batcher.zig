@@ -8,6 +8,15 @@ const gfx = game.gfx;
 const core = @import("mach").core;
 const gpu = core.gpu;
 
+// const vertices = [_]gfx.Vertex{
+//     .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 1, 0 } },    // bottom-left
+//     .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 0, 0 } },   // bottom-right
+//     .{ .pos = .{ -0.5, -0.5 }, .uv = .{ 0, 1 } },  // top-right
+//     .{ .pos = .{ 0.5, -0.5 }, .uv = .{ 1, 1 } },   // top-left
+// };
+
+// const index_data = [_]u32{ 0, 1, 2, 2, 3, 0 };
+
 pub const Batcher = struct {
     allocator: Allocator,
     encoder: ?*gpu.CommandEncoder = null,

@@ -4,7 +4,7 @@ const game = @import("../main.zig");
 const gfx = game.gfx;
 
 pub const Quad = struct {
-    vertices: @Vector(4, gfx.Vertex),
+    vertices: [4]gfx.Vertex,
 
     pub fn setHeight(self: *Quad, height: f32) void {
         for (self.vertices, 0..) |_, i| {
