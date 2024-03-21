@@ -159,11 +159,14 @@ pub const Batcher = struct {
     };
 
     pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
-        const width = @as(f32, @floatFromInt(t.image.width));
-        const height = @as(f32, @floatFromInt(t.image.height));
-        _ = width;
-        _ = height;
+        // const width = @as(f32, @floatFromInt(t.image.width));
+        // const height = @as(f32, @floatFromInt(t.image.height));
         // const pos = zmath.trunc(position);
+        // Top left is first 2 values, bottom right is last 2 values
+        _ = t;
+        const width = @abs(position[0] - position[2]);
+        const height = @abs(position[1] - position[3]);
+        std.debug.print("Texture w: {any}, h: {any}\n", .{width, height});
         const pos = position;
 
         // std.debug.print("Texture position: {any}\n", .{ position });
@@ -183,10 +186,10 @@ pub const Batcher = struct {
 
         const quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ pos[0], pos[0] }, .uv = .{ if (options.flip_x) min else max, min } },   // bottom-left
-                .{ .pos = .{ pos[1], pos[0] }, .uv = .{ if (options.flip_x) max else min, min } },   // bottom-right
-                .{ .pos = .{ pos[1], pos[1] }, .uv = .{ if (options.flip_x) max else min, max } },   // top-right
-                .{ .pos = .{ pos[0], pos[1] }, .uv = .{ if (options.flip_x) min else max, max } },   // top-left
+                .{ .pos = .{ pos[0], pos[1] + height}, .uv = .{ if (options.flip_x) min else max, min } },          // bottom-left
+                .{ .pos = .{ pos[2], pos[3] }, .uv = .{ if (options.flip_x) max else min, min } },                  // bottom-right
+                .{ .pos = .{ pos[2], pos[3] - height }, .uv = .{ if (options.flip_x) max else min, max } },         // top-right
+                .{ .pos = .{ pos[0], pos[1] }, .uv = .{ if (options.flip_x) min else max, max } },                  // top-left
             }
         };
 

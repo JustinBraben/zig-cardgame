@@ -224,7 +224,7 @@ pub const GameState = struct {
             ),
         };
 
-        const position = zmath.f32x4(0.5, -0.5, 0.5, -0.5);
+        const position = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
         // _ = position;
 
         try self.batcher.begin(.{
