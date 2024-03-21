@@ -161,19 +161,43 @@ pub const Batcher = struct {
     pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
         const width = @as(f32, @floatFromInt(t.image.width));
         const height = @as(f32, @floatFromInt(t.image.height));
-        const pos = zmath.trunc(position);
+        _ = width;
+        _ = height;
+        // const pos = zmath.trunc(position);
+        const pos = position;
+
+        // std.debug.print("Texture position: {any}\n", .{ position });
+        // std.debug.print("Texture position truncated: {any}\n", .{ pos });
 
         const max: f32 = if (!options.flip_y) 1.0 else 0.0;
         const min: f32 = if (!options.flip_y) 0.0 else 1.0;
 
+        // const vertices = [_]gfx.Vertex{
+        //     .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 1, 0 } },    // bottom-left
+        //     .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 0, 0 } },   // bottom-right
+        //     .{ .pos = .{ -0.5, -0.5 }, .uv = .{ 0, 1 } },  // top-right
+        //     .{ .pos = .{ 0.5, -0.5 }, .uv = .{ 1, 1 } },   // top-left
+        // };
+
+        // const index_data = [_]u32{ 0, 1, 2, 2, 3, 0 };
+
         const quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ pos[0], pos[1] + height}, .uv = [2]f32{ if (options.flip_x) max else min, min }, },        //Bottom left
-                .{ .pos = .{ pos[0] + width, pos[1] + height}, .uv = [2]f32{ if (options.flip_x) min else max, min }},  //Bottom right
-                .{ .pos = .{ pos[0] + width, pos[1]}, .uv = [2]f32{ if (options.flip_x) min else max, max }},           //Top right
-                .{ .pos = .{ pos[0], pos[1]}, .uv = [2]f32{ if (options.flip_x) max else min, max }},                   //Top left
-            },
+                .{ .pos = .{ pos[0], pos[0] }, .uv = .{ if (options.flip_x) min else max, min } },   // bottom-left
+                .{ .pos = .{ pos[1], pos[0] }, .uv = .{ if (options.flip_x) max else min, min } },   // bottom-right
+                .{ .pos = .{ pos[1], pos[1] }, .uv = .{ if (options.flip_x) max else min, max } },   // top-right
+                .{ .pos = .{ pos[0], pos[1] }, .uv = .{ if (options.flip_x) min else max, max } },   // top-left
+            }
         };
+
+        // const quad = gfx.Quad{
+        //     .vertices = [_]gfx.Vertex{
+        //         .{ .pos = .{ pos[0], pos[1] + height}, .uv = [2]f32{ if (options.flip_x) max else min, min }},          //Bottom left
+        //         .{ .pos = .{ pos[0] + width, pos[1] + height}, .uv = [2]f32{ if (options.flip_x) min else max, min }},  //Bottom right
+        //         .{ .pos = .{ pos[0] + width, pos[1]}, .uv = [2]f32{ if (options.flip_x) min else max, max }},           //Top right
+        //         .{ .pos = .{ pos[0], pos[1]}, .uv = [2]f32{ if (options.flip_x) max else min, max }},                   //Top left
+        //     },
+        // };
 
         return self.append(quad);
     }

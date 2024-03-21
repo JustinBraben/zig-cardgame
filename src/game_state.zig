@@ -225,7 +225,7 @@ pub const GameState = struct {
         };
 
         const position = zmath.f32x4(0.5, -0.5, 0.5, -0.5);
-        _ = position;
+        // _ = position;
 
         try self.batcher.begin(.{
             .pipeline_handle = self.pipeline_default,
@@ -233,7 +233,7 @@ pub const GameState = struct {
             .output_handle = texture_view,
             .clear_color = self.batcher.context.clear_color,
         });
-        try self.batcher.texture(zmath.f32x4s(0), &self.default_texture, .{});
+        try self.batcher.texture(position, &self.default_texture, .{});
         try self.batcher.end(uniforms, self.uniform_buffer_default);
 
         var batcher_commands = try self.batcher.finish();
