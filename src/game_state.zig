@@ -114,6 +114,7 @@ pub const GameState = struct {
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
         const png_relative_path = "assets/Cards_v2.png";
+        // const png_relative_path = "assets/cards.png";
         const format = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
         const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
         defer self.allocator.free(image_full_path);
@@ -211,28 +212,35 @@ pub const GameState = struct {
     }
 
     pub fn renderUsingBatch(self: *GameState) !void {
-        if (self.batcher.encoder) |encoder| {
-            const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
-            const uniforms = gfx.UniformBufferObject{
-            .mvp = zmath.transpose(
-                    zmath.orthographicRh(
-                        @as(f32, @floatFromInt(core.size().width)),
-                        @as(f32, @floatFromInt(core.size().height)),
-                        0.1,
-                        1000
-                    )
-                ),
-            };
+        const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
+        const uniforms = gfx.UniformBufferObject{
+        .mvp = zmath.transpose(
+                zmath.orthographicRh(
+                    @as(f32, @floatFromInt(core.size().width)),
+                    @as(f32, @floatFromInt(core.size().height)),
+                    0.1,
+                    1000
+                )
+            ),
+        };
 
-            try self.batcher.begin(.{
-                .pipeline_handle = self.pipeline_default,
-                .bind_group_handle = self.bind_group_default,
-                .output_handle = texture_view,
-                .clear_color = self.batcher.context.clear_color,
-            });
-            try self.batcher.end(uniforms, self.uniform_buffer_default);
-            _ = encoder;
-        }
+        const position = zmath.f32x4(0.5, -0.5, 0.5, -0.5);
+        _ = position;
+
+        try self.batcher.begin(.{
+            .pipeline_handle = self.pipeline_default,
+            .bind_group_handle = self.bind_group_default,
+            .output_handle = texture_view,
+            .clear_color = self.batcher.context.clear_color,
+        });
+        try self.batcher.texture(zmath.f32x4s(0), &self.default_texture, .{});
+        try self.batcher.end(uniforms, self.uniform_buffer_default);
+
+        var batcher_commands = try self.batcher.finish();
+        
+        core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+        batcher_commands.release();
+        core.swap_chain.present();
     }
 
     pub fn deinit(self: *GameState) void {

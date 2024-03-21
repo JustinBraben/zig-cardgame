@@ -73,7 +73,7 @@ pub fn update(app: *App) !bool {
         }
     }
 
-    //state.render();
+    // state.render();
     try state.renderUsingBatch();
 
     // const batcher_commands = try state.batcher.finish();

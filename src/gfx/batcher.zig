@@ -19,11 +19,11 @@ const gpu = core.gpu;
 
 pub const Batcher = struct {
     allocator: Allocator,
-    encoder: ?*gpu.CommandEncoder = null,
+    encoder: ?*core.gpu.CommandEncoder = null,
     vertices: []gfx.Vertex,
-    vertex_buffer_handle: *gpu.Buffer,
+    vertex_buffer_handle: *core.gpu.Buffer,
     indices: []u32,
-    index_buffer_handle: *gpu.Buffer,
+    index_buffer_handle: *core.gpu.Buffer,
     context: Context = undefined,
     state: State = .idle,
     vert_index: usize = 0,
@@ -55,10 +55,10 @@ pub const Batcher = struct {
         while (i < max_quads) : (i += 1) {
             indices[i * 2 * 3 + 0] = @as(u32, @intCast(i * 4 + 0));
             indices[i * 2 * 3 + 1] = @as(u32, @intCast(i * 4 + 1));
-            indices[i * 2 * 3 + 2] = @as(u32, @intCast(i * 4 + 3));
-            indices[i * 2 * 3 + 3] = @as(u32, @intCast(i * 4 + 1));
-            indices[i * 2 * 3 + 4] = @as(u32, @intCast(i * 4 + 2));
-            indices[i * 2 * 3 + 5] = @as(u32, @intCast(i * 4 + 3));
+            indices[i * 2 * 3 + 2] = @as(u32, @intCast(i * 4 + 2));
+            indices[i * 2 * 3 + 3] = @as(u32, @intCast(i * 4 + 2));
+            indices[i * 2 * 3 + 4] = @as(u32, @intCast(i * 4 + 3));
+            indices[i * 2 * 3 + 5] = @as(u32, @intCast(i * 4 + 0));
         }
 
         const vertex_buffer_descriptor = .{
@@ -90,6 +90,7 @@ pub const Batcher = struct {
         self.state = .progress;
         self.start_count = self.quad_count;
         if (self.encoder == null) {
+            // std.debug.print("batcher encoder is null, creating\n", .{});
             self.encoder = core.device.createCommandEncoder(null);
         }
     }
@@ -183,7 +184,7 @@ pub const Batcher = struct {
         if (uniforms_type_info != .Struct) {
             @compileError("Expected tuple or struct argument, found " ++ @typeName(UniformsType));
         }
-        const uniforms_fields_info = uniforms_type_info.Struct.fields;
+        // const uniforms_fields_info = uniforms_type_info.Struct.fields;
 
         if (self.state == .idle) return error.EndCalledTwice;
         self.state = .idle;
@@ -193,6 +194,7 @@ pub const Batcher = struct {
         if (quad_count < 1) return;
 
         pass: {
+            // std.debug.print("Start of pass block in batcher.end()\n", .{});
             const encoder = self.encoder orelse break :pass;
             const back_buffer_view = core.swap_chain.getCurrentTextureView() orelse break :pass;
             defer back_buffer_view.release();
@@ -212,26 +214,29 @@ pub const Batcher = struct {
             encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
 
             const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
-            defer {
-                batcherRenderPass.end();
-                batcherRenderPass.release();
-            }
+            // defer {
+            //     batcherRenderPass.end();
+            //     batcherRenderPass.release();
+            // }
 
+            // const pass = encoder.beginRenderPass(&render_pass_info);
+            // pass.setPipeline(self.pipeline_default);
             // pass.setVertexBuffer(0, self.vertex_buffer_default, 0, @sizeOf(Vertex) * vertices.len);
             // pass.setIndexBuffer(self.index_buffer_default, .uint32, 0, @sizeOf(u32) * index_data.len);
             // pass.setBindGroup(0, self.bind_group_default, &.{});
             // pass.drawIndexed(index_data.len, 1, 0, 0, 0);
+            // pass.end();
+            // pass.release();
 
+            batcherRenderPass.setPipeline(self.context.pipeline_handle);
             batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
             batcherRenderPass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
-            batcherRenderPass.setPipeline(self.context.pipeline_handle);
-            if (uniforms_fields_info.len > 0) {
-                batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
-            } else {
-                batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, null);
-            }
+            batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
             // Draw only the quads appended this cycle
-            batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, @as(u32, @intCast(self.start_count * 6)), 0, 0);
+            batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, 0, 0, 0);
+            batcherRenderPass.end();
+            batcherRenderPass.release();
+            // std.debug.print("Got to end of batcher pass inside of end()\n", .{});
         }
     }
 
