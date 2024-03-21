@@ -166,8 +166,7 @@ pub const Batcher = struct {
         _ = t;
         const width = @abs(position[0] - position[2]);
         const height = @abs(position[1] - position[3]);
-        std.debug.print("Texture w: {any}, h: {any}\n", .{width, height});
-        const pos = position;
+        _ = width;
 
         // std.debug.print("Texture position: {any}\n", .{ position });
         // std.debug.print("Texture position truncated: {any}\n", .{ pos });
@@ -186,10 +185,10 @@ pub const Batcher = struct {
 
         const quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ pos[0], pos[1] + height}, .uv = .{ if (options.flip_x) min else max, min } },          // bottom-left
-                .{ .pos = .{ pos[2], pos[3] }, .uv = .{ if (options.flip_x) max else min, min } },                  // bottom-right
-                .{ .pos = .{ pos[2], pos[3] - height }, .uv = .{ if (options.flip_x) max else min, max } },         // top-right
-                .{ .pos = .{ pos[0], pos[1] }, .uv = .{ if (options.flip_x) min else max, max } },                  // top-left
+                .{ .pos = .{ position[0], position[1] + height}, .uv = .{ if (options.flip_x) min else max, min } },          // bottom-left
+                .{ .pos = .{ position[2], position[3] }, .uv = .{ if (options.flip_x) max else min, min } },                  // bottom-right
+                .{ .pos = .{ position[2], position[3] - height }, .uv = .{ if (options.flip_x) max else min, max } },         // top-right
+                .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) min else max, max } },                  // top-left
             }
         };
 
