@@ -158,7 +158,27 @@ pub const Batcher = struct {
         flip_x: bool = false,
     };
 
-    pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
+    pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {{
+        const width = @as(f32, @floatFromInt(t.image.width));
+        const height = @as(f32, @floatFromInt(t.image.height));
+        const pos = zmath.trunc(position);
+
+        const max: f32 = if (!options.flip_y) 1.0 else 0.0;
+        const min: f32 = if (!options.flip_y) 0.0 else 1.0;
+
+        const quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
+                .{ .pos = .{ pos[0], pos[1] + height}, .uv = .{ if (options.flip_x) max else min, min } },
+                .{ .pos = .{ pos[0] + width, pos[1] + height}, .uv = .{ if (options.flip_x) min else max, min } },
+                .{ .pos = .{ pos[0] + width, pos[1]}, .uv = .{ if (options.flip_x) min else max, max } },
+                .{ .pos = .{ pos[0], pos[1]}, .uv = .{ if (options.flip_x) max else min, max } },
+            }
+        };
+
+        return self.append(quad);
+    }}
+
+    pub fn oldTexture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
         // const width = @as(f32, @floatFromInt(t.image.width));
         // const height = @as(f32, @floatFromInt(t.image.height));
         // const pos = zmath.trunc(position);

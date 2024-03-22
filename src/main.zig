@@ -8,7 +8,9 @@ const GameState = @import("game_state.zig").GameState;
 const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
+const RenderMainPass = @import("ecs/systems/render_main_pass.zig");
 pub const gfx = @import("gfx/gfx.zig");
+pub const settings = @import("settings.zig");
 
 pub const shaders = @import("shaders.zig");
 
@@ -43,7 +45,7 @@ pub var framebuffer_size: [2]f32 = undefined;
 
 pub fn init(app: *App) !void {
     try core.init(.{
-        .size = .{ .width = 1280, .height = 720 },
+        .size = .{ .width = settings.window_width, .height = settings.window_height },
     });
     core.setFrameRateLimit(60);
     const descriptor = core.descriptor;
@@ -60,6 +62,11 @@ pub fn init(app: *App) !void {
     std.debug.print("base folder : {s}\n", .{base_folder});
 
     state = try GameState.init(allocator);
+
+    // var all_entities = state.world.entities();
+    // while (all_entities.next()) |entity| {
+    //     std.debug.print("Entity : {any}\n", .{entity});
+    // }
 
     app.* = .{
         .timer = try core.Timer.start(),
@@ -88,26 +95,16 @@ pub fn update(app: *App) !bool {
     // state.render();
     try state.renderUsingBatch();
 
-    // const batcher_commands = try state.batcher.finish();
-    // defer batcher_commands.release();
+    // {   // Main Render pass
+    //     try RenderMainPass.run(state);
+    //     if (core.swap_chain.getCurrentTexture()) |back_buffer_view| {
+    //         const batcher_commands = try state.batcher.finish();
+    //         defer back_buffer_view.release();
 
-    // if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
-    //     defer back_buffer_view.release();
-
-    //     var encoder = core.device.createCommandEncoder(null);
-
-    //     {
-    //         const color_attachment = gpu.RenderPassColorAttachment{
-    //             .view = back_buffer_view,
-    //             // sky blue background color:
-    //             .clear_value = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
-    //             .load_op = .clear,
-    //             .store_op = .store,
-    //         };
-
-    //         const render_pass_info = gpu.RenderPassDescriptor.init(.{
-    //             .color_attachments = &.{color_attachment},
-    //         });
+            
+    //         core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+    //         batcher_commands.release();
+    //         core.swap_chain.present();
     //     }
     // }
 
