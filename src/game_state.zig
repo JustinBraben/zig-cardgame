@@ -42,6 +42,7 @@ pub const GameState = struct {
     delta_time: f32 = 0.0,
     game_time: f32 = 0.0,
     world: *Registry = undefined,
+    camera: gfx.Camera = undefined,
     pipeline_default: *gpu.RenderPipeline = undefined,
     vertex_buffer_default: *gpu.Buffer = undefined,
     index_buffer_default: *gpu.Buffer = undefined,
@@ -58,6 +59,7 @@ pub const GameState = struct {
         self.world = try allocator.create(Registry);
 
         self.world.* = Registry.init(allocator);
+        self.camera = gfx.Camera.init(zmath.f32x4s(0));
         const two_of_diamonds = self.world.create();
         const example_tile = Components.Tile{ .x = 0, .y = -1 };
         self.world.add(two_of_diamonds, example_tile);
@@ -168,42 +170,8 @@ pub const GameState = struct {
         return self;
     }
 
-    pub fn render(self: *GameState) void {
-        if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
-            // Clear color for the background
-            const color_attachment = gpu.RenderPassColorAttachment{
-                .view = back_buffer_view,
-                // sky blue background color:
-                .clear_value = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
-                .load_op = .clear,
-                .store_op = .store,
-            };
 
-            const encoder = core.device.createCommandEncoder(null);
-            const render_pass_info = gpu.RenderPassDescriptor.init(.{
-                .color_attachments = &.{color_attachment},
-            });
-
-            const pass = encoder.beginRenderPass(&render_pass_info);
-            pass.setPipeline(self.pipeline_default);
-            pass.setVertexBuffer(0, self.vertex_buffer_default, 0, @sizeOf(Vertex) * vertices.len);
-            pass.setIndexBuffer(self.index_buffer_default, .uint32, 0, @sizeOf(u32) * index_data.len);
-            pass.setBindGroup(0, self.bind_group_default, &.{});
-            pass.drawIndexed(index_data.len, 1, 0, 0, 0);
-            pass.end();
-            pass.release();
-
-            var command = encoder.finish(null);
-            encoder.release();
-
-            const queue = core.queue;
-            queue.submit(&[_]*gpu.CommandBuffer{command});
-            command.release();
-            core.swap_chain.present();
-            back_buffer_view.release();
-        }
-    }
-
+    /// How to render leveraging Batcher
     pub fn renderUsingBatch(self: *GameState) !void {
         const uniforms = gfx.UniformBufferObject{
         .mvp = zmath.transpose(
@@ -217,7 +185,6 @@ pub const GameState = struct {
         };
 
         const position = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
-        // _ = position;
 
         try self.batcher.begin(.{
             .pipeline_handle = self.pipeline_default,
@@ -225,6 +192,35 @@ pub const GameState = struct {
             .output_handle = self.default_texture.view_handle,
         });
         try self.batcher.oldTexture(position, &self.default_texture, .{});
+        try self.batcher.end(uniforms, self.uniform_buffer_default);
+
+        var batcher_commands = try self.batcher.finish();
+        
+        core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+        batcher_commands.release();
+        core.swap_chain.present();
+    }
+
+    pub fn renderUsingNewTextureAndCamera(self: *GameState) !void {
+        const uniforms = gfx.UniformBufferObject{
+            .mvp = zmath.transpose(
+                self.camera.renderTextureMatrix()
+            ),
+        };
+        // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
+
+        // const position = zmath.f32x4(-0.5, -0.5, -0.5, 0.5);
+        // const position = zmath.f32x4(-1.0, -0.5, 0, 0);
+        const tile_pos = utils.tileToPixelCoords(Components.Tile{ .x = 1, .y = 1 });
+        const position = zmath.f32x4(tile_pos.x, tile_pos.y, 0, 0);
+        // _ = position;
+
+        try self.batcher.begin(.{
+            .pipeline_handle = self.pipeline_default,
+            .bind_group_handle = self.bind_group_default,
+            .output_handle = self.default_texture.view_handle,
+        });
+        try self.batcher.texture(position, &self.default_texture, .{});
         try self.batcher.end(uniforms, self.uniform_buffer_default);
 
         var batcher_commands = try self.batcher.finish();

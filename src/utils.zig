@@ -10,3 +10,11 @@ pub fn tileToPixelCoords(self: Components.Tile) Components.Position {
         .y = @as(f32, @floatFromInt(self.y)) * settings.pixels_per_unit,
     };
 }
+
+/// Converts pixel to tile coordinates
+pub fn pixelToTileCoords(self: Components.Position) Components.Tile {
+    return .{
+        .x = @as(i32, @intFromFloat(@round(self.x / settings.pixels_per_unit))),
+        .y = @as(i32, @intFromFloat(@round(self.y / settings.pixels_per_unit))),
+    };
+}

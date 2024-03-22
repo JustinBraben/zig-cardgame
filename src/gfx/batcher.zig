@@ -162,6 +162,8 @@ pub const Batcher = struct {
         const width = @as(f32, @floatFromInt(t.image.width));
         const height = @as(f32, @floatFromInt(t.image.height));
         const pos = zmath.trunc(position);
+        // std.debug.print("Old texture pos : {any}\n", .{position});
+        // std.debug.print("Old texture pos truncated: {any}\n", .{pos});
 
         const max: f32 = if (!options.flip_y) 1.0 else 0.0;
         const min: f32 = if (!options.flip_y) 0.0 else 1.0;
@@ -174,6 +176,7 @@ pub const Batcher = struct {
                 .{ .pos = .{ pos[0], pos[1]}, .uv = .{ if (options.flip_x) max else min, max } },
             }
         };
+        // std.debug.print("Vertices with new texture : {any}\n", .{quad.vertices});
 
         return self.append(quad);
     }}

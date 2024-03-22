@@ -41,7 +41,7 @@ title_timer: core.Timer,
 pub var state: *GameState = undefined;
 pub var content_scale: [2]f32 = undefined;
 pub var window_size: [2]f32 = undefined;
-pub var framebuffer_size: [2]f32 = undefined; 
+pub var framebuffer_size: [2]f32 = undefined;
 
 pub fn init(app: *App) !void {
     try core.init(.{
@@ -92,8 +92,16 @@ pub fn update(app: *App) !bool {
         }
     }
 
-    // state.render();
     try state.renderUsingBatch();
+    // try state.renderUsingNewTextureAndCamera();
+
+    // const time = app.timer.read();
+    // const model = zmath.mul(0, zmath.rotationZ(time * (std.math.pi / 2.0)));
+    // const view = zmath.lookAtLh(
+    //     state.camera.position[0],
+    //     state.camera.position[1],
+    //     state.camera.position[2],   
+    // );
 
     // {   // Main Render pass
     //     try RenderMainPass.run(state);
