@@ -13,6 +13,7 @@ const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const Prefabs = @import("ecs/prefabs.zig").Prefabs;
+const utils = @import("utils.zig");
 pub const gfx = @import("gfx/gfx.zig");
 pub const shaders = @import("shaders.zig");
 
@@ -55,7 +56,14 @@ pub const GameState = struct {
         var self = try allocator.create(GameState);
         self.allocator = allocator;
         self.world = try allocator.create(Registry);
+
         self.world.* = Registry.init(allocator);
+        const two_of_diamonds = self.world.create();
+        const example_tile = Components.Tile{ .x = 0, .y = -1 };
+        self.world.add(two_of_diamonds, example_tile);
+        self.world.add(two_of_diamonds, utils.tileToPixelCoords(example_tile));
+        self.world.add(two_of_diamonds, Components.CardValue.Two);
+        self.world.add(two_of_diamonds, Components.CardSuit.Diamonds);
 
         const shader_module = core.device.createShaderModuleWGSL("textured-quad.wgsl", shaders.textured_quad);
         defer shader_module.release();
@@ -231,7 +239,6 @@ pub const GameState = struct {
             .pipeline_handle = self.pipeline_default,
             .bind_group_handle = self.bind_group_default,
             .output_handle = texture_view,
-            .clear_color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
         });
         try self.batcher.texture(position, &self.default_texture, .{});
         try self.batcher.end(uniforms, self.uniform_buffer_default);
@@ -251,6 +258,7 @@ pub const GameState = struct {
         self.uniform_buffer_default.release();
         self.default_texture.deinit();
         self.batcher.deinit();
+        self.world.deinit();
         self.allocator.destroy(self);
     }
 };

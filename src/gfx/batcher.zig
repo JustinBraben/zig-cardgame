@@ -37,7 +37,7 @@ pub const Batcher = struct {
         // If output handle is null, render to the back buffer
         // otherwise, render to offscreen texture view handle
         output_handle: ?*gpu.TextureView = null,
-        clear_color: gpu.Color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
+        clear_color: core.gpu.Color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
     };
 
     /// Describes the current state of the Batcher

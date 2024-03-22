@@ -42,7 +42,9 @@ pub var window_size: [2]f32 = undefined;
 pub var framebuffer_size: [2]f32 = undefined; 
 
 pub fn init(app: *App) !void {
-    try core.init(.{});
+    try core.init(.{
+        .size = .{ .width = 1280, .height = 720 },
+    });
     core.setFrameRateLimit(60);
     const descriptor = core.descriptor;
     window_size = .{ @floatFromInt(core.size().width), @floatFromInt(core.size().height) };
