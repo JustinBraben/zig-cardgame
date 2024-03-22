@@ -37,10 +37,20 @@ timer: core.Timer,
 title_timer: core.Timer,
 
 pub var state: *GameState = undefined;
+pub var content_scale: [2]f32 = undefined;
+pub var window_size: [2]f32 = undefined;
+pub var framebuffer_size: [2]f32 = undefined; 
 
 pub fn init(app: *App) !void {
     try core.init(.{});
     core.setFrameRateLimit(60);
+    const descriptor = core.descriptor;
+    window_size = .{ @floatFromInt(core.size().width), @floatFromInt(core.size().height) };
+    framebuffer_size = .{ @floatFromInt(descriptor.width), @floatFromInt(descriptor.height) };
+    content_scale = .{ 
+        framebuffer_size[0] / window_size[0],
+        framebuffer_size[1] / window_size[1],
+    };
     const allocator = gpa.allocator();
 
     const base_folder = try std.fs.realpathAlloc(allocator, "../../");
