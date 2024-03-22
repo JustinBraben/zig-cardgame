@@ -9,7 +9,7 @@ const zmath = @import("zmath");
 const zigimg = @import("zigimg");
 const Registry = ecs.Registry;
 const AssetManager = @import("gfx/asset_manager.zig").AssetManager;
-const Components = @import("ecs/components.zig");
+const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const Prefabs = @import("ecs/prefabs.zig").Prefabs;
@@ -142,29 +142,29 @@ pub const GameState = struct {
             .size = @sizeOf(UniformBufferObject),
             .mapped_at_creation = .false,
         });
-        const uniforms = gfx.UniformBufferObject{
-            .mvp = zmath.transpose(
-                zmath.orthographicRh(
-                    @as(f32, @floatFromInt(core.size().width)),
-                    @as(f32, @floatFromInt(core.size().height)), 
-                    0.1, 
-                    1000
-                )
-            ),
-        };
+        // const uniforms = gfx.UniformBufferObject{
+        //     .mvp = zmath.transpose(
+        //         zmath.orthographicRh(
+        //             @as(f32, @floatFromInt(core.size().width)),
+        //             @as(f32, @floatFromInt(core.size().height)), 
+        //             0.1, 
+        //             1000
+        //         )
+        //     ),
+        // };
 
         self.batcher = try gfx.Batcher.init(allocator, 1);
-        try self.batcher.begin(.{
-            .pipeline_handle = pipeline,
-            .bind_group_handle = bind_group,
-            .output_handle = texture_view,
-            .clear_color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
-        });
-        std.debug.print("Batcher vertices before adding texture : {any}\n", .{self.batcher.vertices.len});
-        try self.batcher.texture(zmath.f32x4s(0), &self.default_texture, .{});
-        try self.batcher.end(uniforms, self.uniform_buffer_default);
-        std.debug.print("Batcher vertices after adding texture : {any}\n", .{self.batcher.vertices.len});
-        std.debug.print("Batcher vertices after adding texture : {any}\n", .{self.batcher.vertices});
+        // try self.batcher.begin(.{
+        //     .pipeline_handle = pipeline,
+        //     .bind_group_handle = bind_group,
+        //     .output_handle = texture_view,
+        //     .clear_color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
+        // });
+        // std.debug.print("Batcher vertices before adding texture : {any}\n", .{self.batcher.vertices.len});
+        // try self.batcher.texture(zmath.f32x4s(0), &self.default_texture, .{});
+        // try self.batcher.end(uniforms, self.uniform_buffer_default);
+        // std.debug.print("Batcher vertices after adding texture : {any}\n", .{self.batcher.vertices.len});
+        // std.debug.print("Batcher vertices after adding texture : {any}\n", .{self.batcher.vertices});
         texture_view.release();
         bind_group_layout.release();
 
@@ -231,7 +231,7 @@ pub const GameState = struct {
             .pipeline_handle = self.pipeline_default,
             .bind_group_handle = self.bind_group_default,
             .output_handle = texture_view,
-            .clear_color = self.batcher.context.clear_color,
+            .clear_color = .{ .r = 0.52, .g = 0.8, .b = 0.92, .a = 1.0 },
         });
         try self.batcher.texture(position, &self.default_texture, .{});
         try self.batcher.end(uniforms, self.uniform_buffer_default);

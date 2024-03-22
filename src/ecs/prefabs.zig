@@ -1,6 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const Components =  @import("components.zig");
+const Components =  @import("components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const ecs = @import("zig-ecs");
