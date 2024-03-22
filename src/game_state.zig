@@ -184,13 +184,21 @@ pub const GameState = struct {
             ),
         };
 
-        const position = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
+        const position = zmath.f32x4(0.25, -0.25, -0.25, 0.25);
 
         try self.batcher.begin(.{
             .pipeline_handle = self.pipeline_default,
             .bind_group_handle = self.bind_group_default,
             .output_handle = self.default_texture.view_handle,
         });
+
+        // var view = self.world.view(.{ Components.Tile }, .{});
+        // var iter = view.entityIterator();
+        // while (iter.next()) |entity| {
+        //     const tile = view.getConst(Components.Tile, entity);
+        //     const tile_pos = utils.tileToPixelCoords(tile);
+        // }
+
         try self.batcher.oldTexture(position, &self.default_texture, .{});
         try self.batcher.end(uniforms, self.uniform_buffer_default);
 
@@ -204,15 +212,15 @@ pub const GameState = struct {
     pub fn renderUsingNewTextureAndCamera(self: *GameState) !void {
         const uniforms = gfx.UniformBufferObject{
             .mvp = zmath.transpose(
-                self.camera.renderTextureMatrix()
+                self.camera.frameBufferMatrix()
             ),
         };
-        // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
+        std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
 
-        // const position = zmath.f32x4(-0.5, -0.5, -0.5, 0.5);
+        const position = zmath.f32x4(-0.5, -0.5, -0.5, 0.5);
         // const position = zmath.f32x4(-1.0, -0.5, 0, 0);
-        const tile_pos = utils.tileToPixelCoords(Components.Tile{ .x = 1, .y = 1 });
-        const position = zmath.f32x4(tile_pos.x, tile_pos.y, 0, 0);
+        // const tile_pos = utils.tileToPixelCoords(Components.Tile{ .x = 1, .y = 1 });
+        // const position = zmath.f32x4(tile_pos.x, tile_pos.y, 0, 0);
         // _ = position;
 
         try self.batcher.begin(.{

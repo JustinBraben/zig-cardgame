@@ -181,6 +181,12 @@ pub const Batcher = struct {
         return self.append(quad);
     }}
 
+    pub fn textureSquare(self: *Batcher, position: zmath.F32x4, options: TextureOptions) !void {
+        _ = self;
+        _ = position;
+        _ = options;
+    }
+
     pub fn oldTexture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
         // const width = @as(f32, @floatFromInt(t.image.width));
         // const height = @as(f32, @floatFromInt(t.image.height));
