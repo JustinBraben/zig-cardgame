@@ -181,10 +181,23 @@ pub const Batcher = struct {
         return self.append(quad);
     }}
 
-    pub fn textureSquare(self: *Batcher, position: zmath.F32x4, options: TextureOptions) !void {
-        _ = self;
-        _ = position;
-        _ = options;
+    pub fn textureSquare(self: *Batcher, position: zmath.F32x4, size: [2]f32, options: TextureOptions) !void {
+        // const width = size[0];
+        // const height = size[1];
+
+        const max: f32 = if (!options.flip_y) 1.0 else 0.0;
+        const min: f32 = if (!options.flip_y) 0.0 else 1.0;
+
+        const quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
+                .{ .pos = .{ position[0], position[1] + size[1]}, .uv = .{ if (options.flip_x) min else max, min } },         // bottom-left
+                .{ .pos = .{ position[0] + size[0], position[1] + size[1] }, .uv = .{ if (options.flip_x) max else min, min } },                  // bottom-right
+                .{ .pos = .{ position[0] + size[0], position[1] }, .uv = .{ if (options.flip_x) max else min, max } },         // top-right
+                .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) min else max, max } },                  // top-left
+            }
+        };
+
+        return self.append(quad);
     }
 
     pub fn oldTexture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {

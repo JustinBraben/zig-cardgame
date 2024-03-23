@@ -173,18 +173,24 @@ pub const GameState = struct {
 
     /// How to render leveraging Batcher
     pub fn renderUsingBatch(self: *GameState) !void {
+        // const uniforms = gfx.UniformBufferObject{
+        // .mvp = zmath.transpose(
+        //         zmath.orthographicRh(
+        //             @as(f32, @floatFromInt(core.size().width)),
+        //             @as(f32, @floatFromInt(core.size().height)),
+        //             0.1,
+        //             1000
+        //         )
+        //     ),
+        // };
+
         const uniforms = gfx.UniformBufferObject{
-        .mvp = zmath.transpose(
-                zmath.orthographicRh(
-                    @as(f32, @floatFromInt(core.size().width)),
-                    @as(f32, @floatFromInt(core.size().height)),
-                    0.1,
-                    1000
-                )
+            .mvp = zmath.transpose(
+                self.camera.frameBufferMatrix()
             ),
         };
 
-        const position = zmath.f32x4(0.25, -0.25, -0.25, 0.25);
+        const position = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
 
         try self.batcher.begin(.{
             .pipeline_handle = self.pipeline_default,
@@ -215,20 +221,21 @@ pub const GameState = struct {
                 self.camera.frameBufferMatrix()
             ),
         };
-        std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
+        // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
 
-        const position = zmath.f32x4(-0.5, -0.5, -0.5, 0.5);
-        // const position = zmath.f32x4(-1.0, -0.5, 0, 0);
-        // const tile_pos = utils.tileToPixelCoords(Components.Tile{ .x = 1, .y = 1 });
-        // const position = zmath.f32x4(tile_pos.x, tile_pos.y, 0, 0);
-        // _ = position;
+        const pos_1 = zmath.f32x4(-0.5, -0.5, -0.5, 0.5);
+        const pos_2 = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
+        const pos_3 = zmath.f32x4(0.5, 0.5, -0.5, 0.5);
 
         try self.batcher.begin(.{
             .pipeline_handle = self.pipeline_default,
             .bind_group_handle = self.bind_group_default,
             .output_handle = self.default_texture.view_handle,
         });
-        try self.batcher.texture(position, &self.default_texture, .{});
+        
+        try self.batcher.textureSquare(pos_1, .{ 0.25, 0.25 }, .{});
+        try self.batcher.textureSquare(pos_2, .{ 0.25, 0.25 }, .{});
+        try self.batcher.textureSquare(pos_3, .{ 0.4, 0.4 }, .{});
         try self.batcher.end(uniforms, self.uniform_buffer_default);
 
         var batcher_commands = try self.batcher.finish();

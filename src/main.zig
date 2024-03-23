@@ -92,8 +92,8 @@ pub fn update(app: *App) !bool {
         }
     }
 
-    try state.renderUsingBatch();
-    // try state.renderUsingNewTextureAndCamera();
+    // try state.renderUsingBatch();
+    try state.renderUsingNewTextureAndCamera();
 
     // const time = app.timer.read();
     // const model = zmath.mul(0, zmath.rotationZ(time * (std.math.pi / 2.0)));
