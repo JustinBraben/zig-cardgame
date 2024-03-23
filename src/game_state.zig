@@ -235,7 +235,7 @@ pub const GameState = struct {
         
         try self.batcher.textureSquare(pos_1, .{ 0.25, 0.25 }, .{});
         try self.batcher.textureSquare(pos_2, .{ 0.25, 0.25 }, .{});
-        try self.batcher.textureSquare(pos_3, .{ 0.4, 0.4 }, .{});
+        try self.batcher.textureSquare(pos_3, .{ 0.5, 0.5 }, .{});
         try self.batcher.end(uniforms, self.uniform_buffer_default);
 
         var batcher_commands = try self.batcher.finish();

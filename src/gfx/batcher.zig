@@ -190,10 +190,10 @@ pub const Batcher = struct {
 
         const quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ position[0], position[1] + size[1]}, .uv = .{ if (options.flip_x) min else max, min } },         // bottom-left
-                .{ .pos = .{ position[0] + size[0], position[1] + size[1] }, .uv = .{ if (options.flip_x) max else min, min } },                  // bottom-right
-                .{ .pos = .{ position[0] + size[0], position[1] }, .uv = .{ if (options.flip_x) max else min, max } },         // top-right
-                .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) min else max, max } },                  // top-left
+                .{ .pos = .{ position[0], position[1] + size[1]}, .uv = .{ if (options.flip_x) max else min, min } },         // bottom-left
+                .{ .pos = .{ position[0] + size[0], position[1] + size[1] }, .uv = .{ if (options.flip_x) min else max, min } },                  // bottom-right
+                .{ .pos = .{ position[0] + size[0], position[1] }, .uv = .{ if (options.flip_x) min else max, max } },         // top-right
+                .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) max else min, max } },                  // top-left
             }
         };
 
