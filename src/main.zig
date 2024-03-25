@@ -55,7 +55,7 @@ pub fn init(app: *App) !void {
     const descriptor = core.descriptor;
     window_size = .{ @floatFromInt(core.size().width), @floatFromInt(core.size().height) };
     framebuffer_size = .{ @floatFromInt(descriptor.width), @floatFromInt(descriptor.height) };
-    content_scale = .{ 
+    content_scale = .{
         framebuffer_size[0] / window_size[0],
         framebuffer_size[1] / window_size[1],
     };
@@ -105,7 +105,7 @@ pub fn update(app: *App) !bool {
                 window_size[1] = @floatFromInt(core.size().height);
                 settings.window_width = core.size().width;
                 settings.window_height = core.size().height;
-                content_scale = .{ 
+                content_scale = .{
                     framebuffer_size[0] / window_size[0],
                     framebuffer_size[1] / window_size[1],
                 };
@@ -116,20 +116,17 @@ pub fn update(app: *App) !bool {
     }
 
     // try state.renderUsingBatch();
-    try state.renderUsingNewTextureAndCamera();
+    // try state.renderUsingNewTextureAndCamera();
 
-    // {   // Main Render pass
-    //     try RenderMainPass.run(state);
-    //     if (core.swap_chain.getCurrentTexture()) |back_buffer_view| {
-    //         const batcher_commands = try state.batcher.finish();
-    //         defer back_buffer_view.release();
+    { // Main Render pass
+        try RenderMainPass.run(state);
+    }
 
-            
-    //         core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-    //         batcher_commands.release();
-    //         core.swap_chain.present();
-    //     }
-    // }
+    var batcher_commands = try state.batcher.finish();
+
+    core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+    batcher_commands.release();
+    core.swap_chain.present();
 
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {

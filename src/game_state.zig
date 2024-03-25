@@ -30,10 +30,10 @@ pub const UniformBufferObject = struct {
 };
 
 const vertices = [_]Vertex{
-    .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 1, 0 } },    // bottom-left
-    .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 0, 0 } },   // bottom-right
-    .{ .pos = .{ -0.5, -0.5 }, .uv = .{ 0, 1 } },  // top-right
-    .{ .pos = .{ 0.5, -0.5 }, .uv = .{ 1, 1 } },   // top-left
+    .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 1, 0 } }, // bottom-left
+    .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 0, 0 } }, // bottom-right
+    .{ .pos = .{ -0.5, -0.5 }, .uv = .{ 0, 1 } }, // top-right
+    .{ .pos = .{ 0.5, -0.5 }, .uv = .{ 1, 1 } }, // top-left
 };
 
 const index_data = [_]u32{ 0, 1, 2, 2, 3, 0 };
@@ -68,9 +68,9 @@ pub const GameState = struct {
 
         var index_x: i32 = -20;
         // var index_y: usize = -12;
-        while(index_x < 20) : (index_x += 1) {
+        while (index_x < 20) : (index_x += 1) {
             var index_y: i32 = -12;
-            while(index_y < 12) : (index_y += 1) {
+            while (index_y < 12) : (index_y += 1) {
                 const entity = self.world.create();
                 const tile = Components.Tile{ .x = index_x, .y = index_y };
                 self.world.add(entity, tile);
@@ -147,10 +147,7 @@ pub const GameState = struct {
         const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
         defer self.allocator.free(image_full_path);
 
-        self.default_texture = try gfx.Texture.loadFromFilePath(
-            self.allocator,
-            image_full_path, .{ .format = core.descriptor.format }
-        );
+        self.default_texture = try gfx.Texture.loadFromFilePath(self.allocator, image_full_path, .{ .format = core.descriptor.format });
 
         const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
 
@@ -166,7 +163,7 @@ pub const GameState = struct {
         );
 
         self.uniform_buffer_default = core.device.createBuffer(&.{
-            .usage = . { .copy_dst = true, .uniform = true},
+            .usage = .{ .copy_dst = true, .uniform = true },
             .size = @sizeOf(UniformBufferObject),
             .mapped_at_creation = .false,
         });
@@ -182,7 +179,6 @@ pub const GameState = struct {
         return self;
     }
 
-
     /// How to render leveraging Batcher
     pub fn renderUsingBatch(self: *GameState) !void {
         // const uniforms = gfx.UniformBufferObject{
@@ -197,9 +193,7 @@ pub const GameState = struct {
         // };
 
         const uniforms = gfx.UniformBufferObject{
-            .mvp = zmath.transpose(
-                self.camera.frameBufferMatrix()
-            ),
+            .mvp = zmath.transpose(self.camera.frameBufferMatrix()),
         };
 
         const position = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
@@ -221,7 +215,7 @@ pub const GameState = struct {
         try self.batcher.end(uniforms, self.uniform_buffer_default);
 
         var batcher_commands = try self.batcher.finish();
-        
+
         core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
         batcher_commands.release();
         core.swap_chain.present();
@@ -229,9 +223,7 @@ pub const GameState = struct {
 
     pub fn renderUsingNewTextureAndCamera(self: *GameState) !void {
         const uniforms = gfx.UniformBufferObject{
-            .mvp = zmath.transpose(
-                self.camera.frameBufferMatrix()
-            ),
+            .mvp = zmath.transpose(self.camera.frameBufferMatrix()),
         };
         // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
 
@@ -251,12 +243,6 @@ pub const GameState = struct {
         }
 
         try self.batcher.end(uniforms, self.uniform_buffer_default);
-
-        var batcher_commands = try self.batcher.finish();
-        
-        core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-        batcher_commands.release();
-        core.swap_chain.present();
     }
 
     pub fn deinit(self: *GameState) void {
