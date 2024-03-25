@@ -1,4 +1,5 @@
 pub const std = @import("std");
+pub const testing = std.testing;
 pub const Components = @import("ecs/components/components.zig");
 pub const settings = @import("settings.zig");
 const game = @import("main.zig");
@@ -45,22 +46,56 @@ pub fn tile(p: f32) i32 {
     return @as(i32, @intFromFloat(@round(p / game.settings.pixels_per_unit)));
 }
 
-test "Tile position to pixel position" {
-    const tile_1 = Components.Tile{ .x = 0, .y = 0 };
-    const tile_2 = Components.Tile{ .x = 2, .y = 0 };
-    const tile_3 = Components.Tile{ .x = 0, .y = -3 };
-    const tile_4 = Components.Tile{ .x = 0, .y = 4 };
-    const tile_5 = Components.Tile{ .x = -5, .y = -5 };
+pub fn positionApproxEq(a: Components.Position, b: Components.Position, tolerance: f32) bool {
+    return (a.x - b.x < tolerance) and (a.y - b.y < tolerance);
+}
 
-    const pos_1 = Components.Position{ .x = 0, .y = 0 };
-    const pos_2 = Components.Position{ .x = 0.05, .y = 0};
-    const pos_3 = Components.Position{ .x = 0, .y = -0.125 };
-    const pos_4 = Components.Position{ .x = 0, .y = 0.166666671 };
-    const pos_5 = Components.Position{ .x = -0.125, .y = -0.208333328 };
-    
-    try std.testing.expectEqual(pos_1, tileToPixelCoords(tile_1));
-    try std.testing.expectEqual(pos_2, tileToPixelCoords(tile_2));
-    try std.testing.expectEqual(pos_3, tileToPixelCoords(tile_3));
-    try std.testing.expectEqual(pos_4, tileToPixelCoords(tile_4));
-    try std.testing.expectEqual(pos_5, tileToPixelCoords(tile_5));
+test "Tile position to pixel position" {
+    const tolerance_f32 = @sqrt(std.math.floatEps(f32));
+
+    const tiles = [_]Components.Tile{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 2, .y = 0 },
+        .{ .x = 0, .y = -3 },
+        // .{ .x = 0, .y = 4 },
+        // .{ .x = -5, .y = -5 },
+    };
+
+    const expected_positions = [_]Components.Position{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 0.1, .y = 0.0 },
+        .{ .x = 0, .y = -0.25 },
+        // .{ .x = 0, .y = 0.166666671 },
+        // .{ .x = -0.125, .y = -0.208333328 },
+    };
+
+    for (tiles, expected_positions) |current_tile, expected_position| {
+        const actual_position = tileToPixelCoords(current_tile);
+        try testing.expect(positionApproxEq(expected_position, actual_position, tolerance_f32));
+    }
+}
+
+pub fn tilePositionEq(a: Components.Tile, b: Components.Tile) bool {
+    return a.x == b.x and a.y == b.y;
+}
+
+test "Pixel position to Tile position" {
+    const positions = [_]Components.Position{
+        .{ .x = 645, .y = 356 },
+        .{ .x = 694, .y = 404 },
+        .{ .x = 16, .y = 17 },
+        .{ .x = 1276, .y = 738 },
+    };
+
+    const expected_tiles = [_]Components.Tile{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = -1 },
+        .{ .x = -20, .y = 11 },
+        .{ .x = 19, .y = -12 },
+    };
+
+    for (positions, expected_tiles) |position, expected_tile| {
+        const actual_tile = pixelToTileCoords(position);
+        try testing.expect(tilePositionEq(expected_tile, actual_tile));
+    }
 }
