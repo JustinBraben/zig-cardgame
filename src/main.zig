@@ -51,7 +51,7 @@ pub fn init(app: *App) !void {
     try core.init(.{
         .size = .{ .width = settings.window_width, .height = settings.window_height },
     });
-    core.setFrameRateLimit(60);
+    // core.setFrameRateLimit(60);
     const descriptor = core.descriptor;
     window_size = .{ @floatFromInt(core.size().width), @floatFromInt(core.size().height) };
     framebuffer_size = .{ @floatFromInt(descriptor.width), @floatFromInt(descriptor.height) };
