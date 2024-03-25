@@ -3,10 +3,10 @@ const zmath = @import("zmath");
 const game = @import("main.zig");
 
 /// width of game window
-pub const window_width: u32 = 1280;
+pub var window_width: u32 = 1280;
 
 /// height of game window
-pub const window_height: u32 = 768;
+pub var window_height: u32 = 768;
 
 /// The design texture width for render-textures.
 pub const design_width: u32 = 1440;

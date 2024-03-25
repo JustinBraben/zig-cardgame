@@ -103,6 +103,8 @@ pub fn update(app: *App) !bool {
                 framebuffer_size[1] = @floatFromInt(size.height);
                 window_size[0] = @floatFromInt(core.size().width);
                 window_size[1] = @floatFromInt(core.size().height);
+                settings.window_width = core.size().width;
+                settings.window_height = core.size().height;
                 content_scale = .{ 
                     framebuffer_size[0] / window_size[0],
                     framebuffer_size[1] / window_size[1],
