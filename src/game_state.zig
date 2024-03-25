@@ -65,12 +65,31 @@ pub const GameState = struct {
         self.camera = gfx.Camera.init(zmath.f32x4s(0));
 
         self.world.* = Registry.init(allocator);
-        const two_of_diamonds = self.world.create();
-        const example_tile = Components.Tile{ .x = 0, .y = 0 };
-        self.world.add(two_of_diamonds, example_tile);
-        // self.world.add(two_of_diamonds, utils.tileToPixelCoords(example_tile));
-        self.world.add(two_of_diamonds, Components.CardValue.Two);
-        self.world.add(two_of_diamonds, Components.CardSuit.Diamonds);
+
+        var index_x: i32 = -20;
+        // var index_y: usize = -12;
+        while(index_x < 20) : (index_x += 1) {
+            var index_y: i32 = -12;
+            while(index_y < 12) : (index_y += 1) {
+                const entity = self.world.create();
+                const tile = Components.Tile{ .x = index_x, .y = index_y };
+                self.world.add(entity, tile);
+                self.world.add(entity, Components.CardValue.Seven);
+                self.world.add(entity, Components.CardSuit.Diamonds);
+            }
+            // const entity = self.world.create();
+            // const tile = Components.Tile{ .x = index_x, .y = 0 };
+            // self.world.add(entity, tile);
+            // self.world.add(entity, Components.CardValue.Seven);
+            // self.world.add(entity, Components.CardSuit.Diamonds);
+        }
+
+        // const two_of_diamonds = self.world.create();
+        // const example_tile = Components.Tile{ .x = 0, .y = 0 };
+        // self.world.add(two_of_diamonds, example_tile);
+        // // self.world.add(two_of_diamonds, utils.tileToPixelCoords(example_tile));
+        // self.world.add(two_of_diamonds, Components.CardValue.Two);
+        // self.world.add(two_of_diamonds, Components.CardSuit.Diamonds);
 
         // const three_of_diamonds = self.world.create();
         // const example_tile2 = Components.Tile{ .x = 2, .y = 0 };
@@ -100,15 +119,15 @@ pub const GameState = struct {
         // self.world.add(six_of_diamonds, Components.CardValue.Four);
         // self.world.add(six_of_diamonds, Components.CardSuit.Diamonds);
 
-        const top_left = self.world.create();
-        const example_tile6 = Components.Tile{ .x = -20, .y = 11 };
-        self.world.add(top_left, example_tile6);
-        self.world.add(top_left, Components.CardValue.Seven);
+        // const top_left = self.world.create();
+        // const example_tile6 = Components.Tile{ .x = -20, .y = 11 };
+        // self.world.add(top_left, example_tile6);
+        // self.world.add(top_left, Components.CardValue.Seven);
 
-        const bottom_right = self.world.create();
-        const example_tile7 = Components.Tile{ .x = 19, .y = -12 };
-        self.world.add(bottom_right, example_tile7);
-        self.world.add(bottom_right, Components.CardValue.Seven);
+        // const bottom_right = self.world.create();
+        // const example_tile7 = Components.Tile{ .x = 19, .y = -12 };
+        // self.world.add(bottom_right, example_tile7);
+        // self.world.add(bottom_right, Components.CardValue.Seven);
 
         const shader_module = core.device.createShaderModuleWGSL("textured-quad.wgsl", shaders.textured_quad);
         defer shader_module.release();
@@ -166,8 +185,9 @@ pub const GameState = struct {
 
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
-        const png_relative_path = "assets/Cards_v2.png";
+        const png_relative_path = "assets/Awkward_32x32.png";
         // const png_relative_path = "assets/cards.png";
+        // const png_relative_path = "assets/Cards_v2.png";
         const format = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
         const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
         defer self.allocator.free(image_full_path);
