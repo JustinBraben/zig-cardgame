@@ -91,7 +91,24 @@ pub fn update(app: *App) !bool {
     var iter = core.pollEvents();
     while (iter.next()) |event| {
         switch (event) {
+            .mouse_motion => |mouse_motion| {
+                state.mouse.position = .{ @floatCast(mouse_motion.pos.x), @floatCast(mouse_motion.pos.y) };
+            },
+            .mouse_press => |mouse_press| {
+                state.mouse.setButtonState(mouse_press.button, mouse_press.mods, .press);
+            },
             .close => return true,
+            .framebuffer_resize => |size| {
+                framebuffer_size[0] = @floatFromInt(size.width);
+                framebuffer_size[1] = @floatFromInt(size.height);
+                window_size[0] = @floatFromInt(core.size().width);
+                window_size[1] = @floatFromInt(core.size().height);
+                content_scale = .{ 
+                    framebuffer_size[0] / window_size[0],
+                    framebuffer_size[1] / window_size[1],
+                };
+                state.camera.frameBufferResize();
+            },
             else => {},
         }
     }

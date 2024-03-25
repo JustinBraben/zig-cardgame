@@ -1,11 +1,12 @@
 pub const std = @import("std");
 pub const Components = @import("ecs/components/components.zig");
 pub const settings = @import("settings.zig");
+const game = @import("main.zig");
 
 pub fn getTileSize() Components.Position {
     return .{
-        .x = settings.pixels_per_unit / settings.window_width,
-        .y = settings.pixels_per_unit / settings.window_height,
+        .x = settings.pixels_per_unit / settings.window_width * 2.0,
+        .y = settings.pixels_per_unit / settings.window_height * 2.0,
     };
 }
 
@@ -15,22 +16,43 @@ pub fn tileToPixelCoords(self: Components.Tile) Components.Position {
     // Create a transfer function to convert between the two
     // Use the tile size and size of window to calculate the position
     // TODO: Eventually may need to change this to accomadate camera view
+    // const tile_pos_x = @as(f32, @floatFromInt(self.x)) * settings.pixels_per_unit;
+    // const tile_pos_y = @as(f32, @floatFromInt(self.y)) * settings.pixels_per_unit;
 
+    // return .{
+    //     .x = tile_pos_x / @as(f32, @floatFromInt(settings.window_width)),
+    //     .y = tile_pos_y / @as(f32, @floatFromInt(settings.window_height)),
+    // };
+
+    const half_width = @as(f32, @floatFromInt(settings.window_width / 2));
+    const half_height = @as(f32, @floatFromInt(settings.window_height / 2));
     const tile_pos_x = @as(f32, @floatFromInt(self.x)) * settings.pixels_per_unit;
     const tile_pos_y = @as(f32, @floatFromInt(self.y)) * settings.pixels_per_unit;
 
     return .{
-        .x = tile_pos_x / @as(f32, @floatFromInt(settings.window_width)),
-        .y = tile_pos_y / @as(f32, @floatFromInt(settings.window_height)),
+        .x = tile_pos_x / half_width,
+        .y = tile_pos_y / half_height,
     };
 }
 
 /// Converts pixel to tile coordinates
 pub fn pixelToTileCoords(self: Components.Position) Components.Tile {
+    const half_width = @as(f32, @floatFromInt(settings.window_width / 2));
+    const half_height = @as(f32, @floatFromInt(settings.window_height / 2));
+    const tile_pos_x = @divFloor((self.x - half_width), settings.pixels_per_unit);
+    const tile_pos_y = @divFloor((half_height - self.y), settings.pixels_per_unit);
+
     return .{
-        .x = @as(i32, @intFromFloat(@round(self.x / settings.pixels_per_unit))),
-        .y = @as(i32, @intFromFloat(@round(self.y / settings.pixels_per_unit))),
+        .x = @as(i32, @intFromFloat(tile_pos_x)),
+        .y = @as(i32, @intFromFloat(tile_pos_y)),
     };
+}
+
+pub fn tile(p: f32) i32 {
+    // const half_width = settings.window_width / 2;
+    // const rounded_pos = @round(p / settings.pixels_per_unit);
+
+    return @as(i32, @intFromFloat(@round(p / settings.pixels_per_unit)));
 }
 
 test "Tile position to pixel position" {
