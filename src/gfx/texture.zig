@@ -94,6 +94,32 @@ pub const Texture = struct {
         };
     }
 
+    pub fn blit(self: *Texture, src_pixels: [][4]u8, dst_rect: [4]u32) void {
+        const x = @as(usize, @intCast(dst_rect[0]));
+        const y = @as(usize, @intCast(dst_rect[1]));
+        const width = @as(usize, @intCast(dst_rect[2]));
+        const height = @as(usize, @intCast(dst_rect[3]));
+
+        const texture_width = @as(usize, @intCast(self.image.width));
+
+        var starting_y = y;
+        var starting_hieght = height;
+
+        var dst_pixels = @as([*][4]u8, @ptrCast(self.image.pixels.asBytes().ptr))[0..self.image.pixels.asBytes().len / 4];
+        
+        var data = dst_pixels[(x + starting_y * texture_width)..(x + starting_y * texture_width + width)];
+        var src_y: usize = 0;
+        while (starting_hieght > 0) : (starting_hieght -= 1) {
+            const src_row = src_pixels[(src_y * width)..(src_y * width) + width];
+            @memcpy(data, src_row);
+
+            // next row and move our to it as well
+            src_y += 1;
+            starting_y += 1;
+            data = dst_pixels[(x + starting_y * texture_width)..(x + starting_y * texture_width + width)];
+        }
+    }
+
     pub fn deinit(self: *Texture) void {
         self.handle.release();
         self.view_handle.release();
