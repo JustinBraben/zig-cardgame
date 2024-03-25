@@ -18,6 +18,10 @@ pub const UniformBufferObject = struct {
     mvp: zmath.Mat,
 };
 
+test {
+    _ = @import("utils.zig");
+}
+
 pub const App = @This();
 
 const JSONSprite = struct {

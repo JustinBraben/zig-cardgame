@@ -58,20 +58,36 @@ pub const GameState = struct {
         self.allocator = allocator;
         self.world = try allocator.create(Registry);
 
-        self.world.* = Registry.init(allocator);
         self.camera = gfx.Camera.init(zmath.f32x4s(0));
+
+        self.world.* = Registry.init(allocator);
         const two_of_diamonds = self.world.create();
-        const example_tile = Components.Tile{ .x = 0, .y = -1 };
+        const example_tile = Components.Tile{ .x = 0, .y = 0 };
         self.world.add(two_of_diamonds, example_tile);
-        self.world.add(two_of_diamonds, utils.tileToPixelCoords(example_tile));
+        // self.world.add(two_of_diamonds, utils.tileToPixelCoords(example_tile));
         self.world.add(two_of_diamonds, Components.CardValue.Two);
         self.world.add(two_of_diamonds, Components.CardSuit.Diamonds);
+
         const three_of_diamonds = self.world.create();
-        const example_tile2 = Components.Tile{ .x = -10, .y = 10 };
+        const example_tile2 = Components.Tile{ .x = 2, .y = 0 };
         self.world.add(three_of_diamonds, example_tile2);
-        self.world.add(three_of_diamonds, utils.tileToPixelCoords(example_tile2));
+        // self.world.add(three_of_diamonds, utils.tileToPixelCoords(example_tile2));
         self.world.add(three_of_diamonds, Components.CardValue.Three);
         self.world.add(three_of_diamonds, Components.CardSuit.Diamonds);
+
+        const four_of_diamonds = self.world.create();
+        const example_tile3 = Components.Tile{ .x = 0, .y = -3 };
+        self.world.add(four_of_diamonds, example_tile3);
+        // self.world.add(four_of_diamonds, utils.tileToPixelCoords(example_tile2));
+        self.world.add(four_of_diamonds, Components.CardValue.Four);
+        self.world.add(four_of_diamonds, Components.CardSuit.Diamonds);
+
+        const five_of_diamonds = self.world.create();
+        const example_tile4 = Components.Tile{ .x = 0, .y = 4 };
+        self.world.add(five_of_diamonds, example_tile4);
+        // self.world.add(five_of_diamonds, utils.tileToPixelCoords(example_tile4));
+        self.world.add(five_of_diamonds, Components.CardValue.Four);
+        self.world.add(five_of_diamonds, Components.CardSuit.Diamonds);
 
         const shader_module = core.device.createShaderModuleWGSL("textured-quad.wgsl", shaders.textured_quad);
         defer shader_module.release();
@@ -223,19 +239,21 @@ pub const GameState = struct {
         };
         // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
 
-        const pos_1 = zmath.f32x4(-0.5, -0.5, -0.5, 0.5);
-        const pos_2 = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
-        const pos_3 = zmath.f32x4(0.5, 0.5, -0.5, 0.5);
-
         try self.batcher.begin(.{
             .pipeline_handle = self.pipeline_default,
             .bind_group_handle = self.bind_group_default,
             .output_handle = self.default_texture.view_handle,
         });
-        
-        try self.batcher.textureSquare(pos_1, .{ 0.25, 0.25 }, .{});
-        try self.batcher.textureSquare(pos_2, .{ 0.25, 0.25 }, .{});
-        try self.batcher.textureSquare(pos_3, .{ 0.5, 0.5 }, .{});
+
+        var view = self.world.view(.{ Components.Tile, Components.CardValue }, .{});
+        var iter = view.entityIterator();
+        const size = utils.getTileSize();
+        while (iter.next()) |entity| {
+            const tile = view.getConst(Components.Tile, entity);
+            const tile_pos = utils.tileToPixelCoords(tile);
+            try self.batcher.textureSquare(zmath.f32x4(tile_pos.x, tile_pos.y, 0, 0), .{ size.x, size.y }, .{});
+        }
+
         try self.batcher.end(uniforms, self.uniform_buffer_default);
 
         var batcher_commands = try self.batcher.finish();

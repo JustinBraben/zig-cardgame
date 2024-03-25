@@ -246,6 +246,60 @@ pub const Batcher = struct {
         return self.append(quad);
     }
 
+    pub const SpriteOptions = struct {
+        // color: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
+        flip_x: bool = false,
+        flip_y: bool = false,
+        scale: [2]f32 = .{ 1.0, 1.0 },
+        // vert_mode: VertRenderMode = .standard,
+        // frag_mode: FragRenderMode = .standard,
+        time: f32 = 0.0,
+        rotation: f32 = 0.0,
+
+        // pub const VertRenderMode = enum {
+        //     standard,
+        //     top_sway,
+        // };
+
+        // pub const FragRenderMode = enum {
+        //     standard,
+        //     palette,
+        // };
+    };
+
+    pub fn sprite(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, s: gfx.Sprite, options: SpriteOptions) !void {
+        const x = @as(f32, @floatFromInt(s.source[0]));
+        const y = @as(f32, @floatFromInt(s.source[1]));
+        const width = @as(f32, @floatFromInt(s.source[2]));
+        const height = @as(f32, @floatFromInt(s.source[3]));
+        const o_x = @as(f32, @floatFromInt(s.origin[0]));
+        const o_y = @as(f32, @floatFromInt(s.origin[1]));
+        const tex_width = @as(f32, @floatFromInt(t.image.width));
+        const tex_height = @as(f32, @floatFromInt(t.image.height));
+
+        const origin_x = if (options.flip_x) o_x - width else -o_x;
+        const origin_y = if (options.flip_y) -o_y else o_y - height;
+        const pos = @trunc(position);
+
+        var quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
+
+            }
+        };
+
+        // Set viewport of quad to the sprite
+        quad.setViewport(x, y, height, width, tex_width, tex_height);
+
+        // Apply mirroring
+        if (options.flip_x) quad.flipHorizontally();
+        if (options.flip_y) quad.flipVertically();
+
+        // Apply rotation
+        if (options.rotation > 0.0 or options.rotation < 0.0) quad.rotate(options.rotation, pos[0], pos[1], origin_x, origin_y);
+
+        return self.append(quad);
+    }
+
     pub fn end(self: *Batcher, uniforms: anytype, buffer: *gpu.Buffer) !void {
         const UniformsType = @TypeOf(uniforms);
         const uniforms_type_info = @typeInfo(UniformsType);
