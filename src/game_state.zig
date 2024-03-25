@@ -84,51 +84,6 @@ pub const GameState = struct {
             // self.world.add(entity, Components.CardSuit.Diamonds);
         }
 
-        // const two_of_diamonds = self.world.create();
-        // const example_tile = Components.Tile{ .x = 0, .y = 0 };
-        // self.world.add(two_of_diamonds, example_tile);
-        // // self.world.add(two_of_diamonds, utils.tileToPixelCoords(example_tile));
-        // self.world.add(two_of_diamonds, Components.CardValue.Two);
-        // self.world.add(two_of_diamonds, Components.CardSuit.Diamonds);
-
-        // const three_of_diamonds = self.world.create();
-        // const example_tile2 = Components.Tile{ .x = 2, .y = 0 };
-        // self.world.add(three_of_diamonds, example_tile2);
-        // // self.world.add(three_of_diamonds, utils.tileToPixelCoords(example_tile2));
-        // self.world.add(three_of_diamonds, Components.CardValue.Three);
-        // self.world.add(three_of_diamonds, Components.CardSuit.Diamonds);
-
-        // const four_of_diamonds = self.world.create();
-        // const example_tile3 = Components.Tile{ .x = 0, .y = -3 };
-        // self.world.add(four_of_diamonds, example_tile3);
-        // // self.world.add(four_of_diamonds, utils.tileToPixelCoords(example_tile2));
-        // self.world.add(four_of_diamonds, Components.CardValue.Four);
-        // self.world.add(four_of_diamonds, Components.CardSuit.Diamonds);
-
-        // const five_of_diamonds = self.world.create();
-        // const example_tile4 = Components.Tile{ .x = 0, .y = 4 };
-        // self.world.add(five_of_diamonds, example_tile4);
-        // // self.world.add(five_of_diamonds, utils.tileToPixelCoords(example_tile4));
-        // self.world.add(five_of_diamonds, Components.CardValue.Four);
-        // self.world.add(five_of_diamonds, Components.CardSuit.Diamonds);
-
-        // const six_of_diamonds = self.world.create();
-        // const example_tile5 = Components.Tile{ .x = -5, .y = -5 };
-        // self.world.add(six_of_diamonds, example_tile5);
-        // // self.world.add(five_of_diamonds, utils.tileToPixelCoords(example_tile4));
-        // self.world.add(six_of_diamonds, Components.CardValue.Four);
-        // self.world.add(six_of_diamonds, Components.CardSuit.Diamonds);
-
-        // const top_left = self.world.create();
-        // const example_tile6 = Components.Tile{ .x = -20, .y = 11 };
-        // self.world.add(top_left, example_tile6);
-        // self.world.add(top_left, Components.CardValue.Seven);
-
-        // const bottom_right = self.world.create();
-        // const example_tile7 = Components.Tile{ .x = 19, .y = -12 };
-        // self.world.add(bottom_right, example_tile7);
-        // self.world.add(bottom_right, Components.CardValue.Seven);
-
         const shader_module = core.device.createShaderModuleWGSL("textured-quad.wgsl", shaders.textured_quad);
         defer shader_module.release();
 
