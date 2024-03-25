@@ -14,7 +14,7 @@ const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const Prefabs = @import("ecs/prefabs.zig").Prefabs;
-const utils = @import("utils.zig");
+pub const utils = @import("utils.zig");
 pub const gfx = @import("gfx/gfx.zig");
 pub const shaders = @import("shaders.zig");
 

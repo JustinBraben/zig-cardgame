@@ -5,7 +5,7 @@ const gpu = core.gpu;
 const zigimg = @import("zigimg");
 const zmath = @import("zmath");
 const GameState = @import("game_state.zig").GameState;
-const Components = @import("ecs/components/components.zig");
+pub const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const RenderMainPass = @import("ecs/systems/render_main_pass.zig");
@@ -117,14 +117,6 @@ pub fn update(app: *App) !bool {
 
     // try state.renderUsingBatch();
     try state.renderUsingNewTextureAndCamera();
-
-    // const time = app.timer.read();
-    // const model = zmath.mul(0, zmath.rotationZ(time * (std.math.pi / 2.0)));
-    // const view = zmath.lookAtLh(
-    //     state.camera.position[0],
-    //     state.camera.position[1],
-    //     state.camera.position[2],   
-    // );
 
     // {   // Main Render pass
     //     try RenderMainPass.run(state);

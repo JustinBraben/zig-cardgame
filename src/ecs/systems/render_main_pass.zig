@@ -4,7 +4,7 @@ const ecs = @import("zflecs");
 const GameState = @import("../../game_state.zig").GameState;
 const game = @import("../../main.zig");
 const gfx = game.gfx;
-const components = game.components;
+const Components = game.Components;
 
 pub fn run(gamestate: *GameState) !void {
 
