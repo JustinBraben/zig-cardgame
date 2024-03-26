@@ -278,6 +278,38 @@ pub const Batcher = struct {
         // };
     };
 
+    pub fn spriteNew(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, s: gfx.Sprite, options: SpriteOptions) !void {
+        const x = @as(f32, @floatFromInt(s.source[0]));
+        const y = @as(f32, @floatFromInt(s.source[1]));
+        const width = @as(f32, @floatFromInt(s.source[2]));
+        const height = @as(f32, @floatFromInt(s.source[3]));
+        const width_transform = @as(f32, @floatFromInt(s.source[2])) / @as(f32, @floatFromInt(game.settings.window_width)) * 2.0;
+        const height_transform = @as(f32, @floatFromInt(s.source[3])) / @as(f32, @floatFromInt(game.settings.window_height)) * 2.0;
+        const tex_width = @as(f32, @floatFromInt(t.image.width));
+        const tex_height = @as(f32, @floatFromInt(t.image.height));
+
+        const max: f32 = if (!options.flip_y) 1.0 else 0.0;
+        const min: f32 = if (!options.flip_y) 0.0 else 1.0;
+
+        var quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
+                .{ .pos = .{ position[0], position[1] + height_transform}, .uv = .{ if (options.flip_x) max else min, min } },         // bottom-left
+                .{ .pos = .{ position[0] + width_transform, position[1] + height_transform }, .uv = .{ if (options.flip_x) min else max, min } },                  // bottom-right
+                .{ .pos = .{ position[0] + width_transform, position[1] }, .uv = .{ if (options.flip_x) min else max, max } },         // top-right
+                .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) max else min, max } },                  // top-left
+            }
+        };
+
+        // Set viewport of quad to the sprite
+        quad.setViewport(x, y, height, width, tex_width, tex_height);
+
+        // Apply mirroring
+        if (options.flip_x) quad.flipHorizontally();
+        if (options.flip_y) quad.flipVertically();
+
+        return self.append(quad);
+    }
+
     pub fn sprite(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, s: gfx.Sprite, options: SpriteOptions) !void {
         const x = @as(f32, @floatFromInt(s.source[0]));
         const y = @as(f32, @floatFromInt(s.source[1]));
