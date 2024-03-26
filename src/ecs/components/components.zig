@@ -1,4 +1,11 @@
-pub const Position = struct { 
+const std = @import("std");
+const zmath = @import("zmath");
+const game = @import("../../main.zig");
+const ecs = @import("zig-ecs");
+
+const sprites = @import("sprites.zig");
+
+pub const Position = struct {
     x: f32,
     y: f32,
 };
@@ -13,9 +20,9 @@ pub const CardValue = enum {
     Seven,
     Eight,
     Nine,
-    Ten, 
-    Jack, 
-    Queen, 
+    Ten,
+    Jack,
+    Queen,
     King,
 };
 
@@ -25,3 +32,6 @@ pub const Tile = struct {
     x: i32 = 0,
     y: i32 = 0,
 };
+
+pub const SpriteRenderer = sprites.SpriteRenderer;
+pub const SpriteAnimator = sprites.SpriteAnimator;

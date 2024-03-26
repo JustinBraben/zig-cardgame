@@ -158,28 +158,28 @@ pub const Batcher = struct {
         flip_x: bool = false,
     };
 
-    pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {{
-        const width = @as(f32, @floatFromInt(t.image.width));
-        const height = @as(f32, @floatFromInt(t.image.height));
-        const pos = zmath.trunc(position);
-        // std.debug.print("Old texture pos : {any}\n", .{position});
-        // std.debug.print("Old texture pos truncated: {any}\n", .{pos});
+    pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
+        {
+            const width = @as(f32, @floatFromInt(t.image.width));
+            const height = @as(f32, @floatFromInt(t.image.height));
+            const pos = zmath.trunc(position);
+            // std.debug.print("Old texture pos : {any}\n", .{position});
+            // std.debug.print("Old texture pos truncated: {any}\n", .{pos});
 
-        const max: f32 = if (!options.flip_y) 1.0 else 0.0;
-        const min: f32 = if (!options.flip_y) 0.0 else 1.0;
+            const max: f32 = if (!options.flip_y) 1.0 else 0.0;
+            const min: f32 = if (!options.flip_y) 0.0 else 1.0;
 
-        const quad = gfx.Quad{
-            .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ pos[0], pos[1] + height}, .uv = .{ if (options.flip_x) max else min, min } },
-                .{ .pos = .{ pos[0] + width, pos[1] + height}, .uv = .{ if (options.flip_x) min else max, min } },
-                .{ .pos = .{ pos[0] + width, pos[1]}, .uv = .{ if (options.flip_x) min else max, max } },
-                .{ .pos = .{ pos[0], pos[1]}, .uv = .{ if (options.flip_x) max else min, max } },
-            }
-        };
-        // std.debug.print("Vertices with new texture : {any}\n", .{quad.vertices});
+            const quad = gfx.Quad{ .vertices = [_]gfx.Vertex{
+                .{ .pos = .{ pos[0], pos[1] + height }, .uv = .{ if (options.flip_x) max else min, min } },
+                .{ .pos = .{ pos[0] + width, pos[1] + height }, .uv = .{ if (options.flip_x) min else max, min } },
+                .{ .pos = .{ pos[0] + width, pos[1] }, .uv = .{ if (options.flip_x) min else max, max } },
+                .{ .pos = .{ pos[0], pos[1] }, .uv = .{ if (options.flip_x) max else min, max } },
+            } };
+            // std.debug.print("Vertices with new texture : {any}\n", .{quad.vertices});
 
-        return self.append(quad);
-    }}
+            return self.append(quad);
+        }
+    }
 
     pub fn textureSquare(self: *Batcher, position: zmath.F32x4, size: [2]f32, options: TextureOptions) !void {
         // const width = size[0];
@@ -227,11 +227,11 @@ pub const Batcher = struct {
 
         const quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ position[0], position[1] + height}, .uv = .{ if (options.flip_x) min else max, min } },          // bottom-left
-                .{ .pos = .{ position[2], position[3] }, .uv = .{ if (options.flip_x) max else min, min } },                  // bottom-right
-                .{ .pos = .{ position[2], position[3] - height }, .uv = .{ if (options.flip_x) max else min, max } },         // top-right
-                .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) min else max, max } },                  // top-left
-            }
+                .{ .pos = .{ position[0], position[1] + height }, .uv = .{ if (options.flip_x) min else max, min } }, // bottom-left
+                .{ .pos = .{ position[2], position[3] }, .uv = .{ if (options.flip_x) max else min, min } }, // bottom-right
+                .{ .pos = .{ position[2], position[3] - height }, .uv = .{ if (options.flip_x) max else min, max } }, // top-right
+                .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) min else max, max } }, // top-left
+            },
         };
 
         // const quad = gfx.Quad{
@@ -281,8 +281,7 @@ pub const Batcher = struct {
         const origin_y = if (options.flip_y) -o_y else o_y - height;
         const pos = @trunc(position);
 
-        var quad = gfx.Quad{
-            .vertices = [_]gfx.Vertex{
+        var quad = gfx.Quad{ .vertices = [_]gfx.Vertex{
                 .{
                     .pos = .{ pos[0] + origin_x, pos[1] + height + origin_y },
                     .uv = .{ 0.0, 0.0 },
@@ -299,7 +298,7 @@ pub const Batcher = struct {
                     .pos = .{ pos[0] + origin_x, pos[1] + origin_y },
                     .uv = .{ 0.0, 1.0 },
                 },
-            }
+            } 
         };
 
         // Set viewport of quad to the sprite

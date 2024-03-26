@@ -30,12 +30,12 @@ pub const Texture = struct {
 
     pub fn loadFromFilePath(allocator: Allocator, filePath: []const u8, options: Texture.TextureOptions) !Texture {
         const image = try zigimg.Image.fromFilePath(allocator, filePath);
-        return create(allocator, image, .{ .address_mode = options.address_mode, .filter = options.filter});
+        return create(allocator, image, .{ .address_mode = options.address_mode, .filter = options.filter });
     }
 
     pub fn create(allocator: Allocator, image: zigimg.Image, options: Texture.TextureOptions) !Texture {
         const img_size = gpu.Extent3D{ .width = @as(u32, @intCast(image.width)), .height = @as(u32, @intCast(image.height)) };
-        std.debug.print("img width : {}, height : {}\n", .{img_size.width, img_size.height});
+        std.debug.print("img width : {}, height : {}\n", .{ img_size.width, img_size.height });
 
         const texture_descriptor = .{
             .size = img_size,
@@ -105,12 +105,12 @@ pub const Texture = struct {
         var starting_y = y;
         var starting_hieght = height;
 
-        var dst_pixels = @as([*][4]u8, @ptrCast(self.image.pixels.asBytes().ptr))[0..self.image.pixels.asBytes().len / 4];
-        
+        var dst_pixels = @as([*][4]u8, @ptrCast(self.image.pixels.asBytes().ptr))[0 .. self.image.pixels.asBytes().len / 4];
+
         var data = dst_pixels[(x + starting_y * texture_width)..(x + starting_y * texture_width + width)];
         var src_y: usize = 0;
         while (starting_hieght > 0) : (starting_hieght -= 1) {
-            const src_row = src_pixels[(src_y * width)..(src_y * width) + width];
+            const src_row = src_pixels[(src_y * width) .. (src_y * width) + width];
             @memcpy(data, src_row);
 
             // next row and move our to it as well

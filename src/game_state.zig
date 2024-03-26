@@ -140,7 +140,7 @@ pub const GameState = struct {
 
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
-        const png_relative_path = "assets/Awkward_32x32.png";
+        const png_relative_path = "assets/Awkward_32x32_Animation.png";
         // const png_relative_path = "assets/cards.png";
         // const png_relative_path = "assets/Cards_v2.png";
         const format = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";

@@ -1,0 +1,17 @@
+{
+    "sprites" : [
+        {
+            "name": "Awkward",
+            "source": [0, 0, 32, 32],
+            "origin": [0, 0]
+        }
+    ],
+    "animations" : [
+        {
+            "name": "Awkward_Layer",
+            "start": 0,
+            "length": 3,
+            "fps": 2
+        }
+    ]
+}
