@@ -86,7 +86,7 @@ pub const GameState = struct {
                 self.world.add(entity, Components.SpriteAnimator{
                     .animation = &animations,
                     .state = .play,
-                    .fps = 2,
+                    .fps = if (index_x + index_y < 1) 1 else @as(usize, @intCast(index_x + index_y)),
                 });
             }
             // const entity = self.world.create();

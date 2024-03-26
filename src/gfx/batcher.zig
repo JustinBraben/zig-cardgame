@@ -373,7 +373,6 @@ pub const Batcher = struct {
         if (quad_count < 1) return;
 
         pass: {
-            // std.debug.print("Start of pass block in batcher.end()\n", .{});
             const encoder = self.encoder orelse break :pass;
             const back_buffer_view = core.swap_chain.getCurrentTextureView() orelse break :pass;
             defer back_buffer_view.release();
@@ -393,19 +392,6 @@ pub const Batcher = struct {
             encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
 
             const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
-            // defer {
-            //     batcherRenderPass.end();
-            //     batcherRenderPass.release();
-            // }
-
-            // const pass = encoder.beginRenderPass(&render_pass_info);
-            // pass.setPipeline(self.pipeline_default);
-            // pass.setVertexBuffer(0, self.vertex_buffer_default, 0, @sizeOf(Vertex) * vertices.len);
-            // pass.setIndexBuffer(self.index_buffer_default, .uint32, 0, @sizeOf(u32) * index_data.len);
-            // pass.setBindGroup(0, self.bind_group_default, &.{});
-            // pass.drawIndexed(index_data.len, 1, 0, 0, 0);
-            // pass.end();
-            // pass.release();
 
             batcherRenderPass.setPipeline(self.context.pipeline_handle);
             batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
@@ -415,7 +401,6 @@ pub const Batcher = struct {
             batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, 0, 0, 0);
             batcherRenderPass.end();
             batcherRenderPass.release();
-            // std.debug.print("Got to end of batcher pass inside of end()\n", .{});
         }
     }
 
