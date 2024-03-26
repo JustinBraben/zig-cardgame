@@ -1,6 +1,5 @@
 pub const Sprite = struct {
     name: [:0]const u8,
-    source_file_path: []const u8,
-    pos: []f32,
-    size: []f32,
+    source: [4]u32,
+    origin: [2]i32,
 };

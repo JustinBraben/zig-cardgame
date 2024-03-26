@@ -10,6 +10,7 @@ const zigimg = @import("zigimg");
 const input = @import("input/input.zig");
 const Registry = ecs.Registry;
 const AssetManager = @import("gfx/asset_manager.zig").AssetManager;
+const Atlas = @import("gfx/atlas.zig").Atlas;
 const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
@@ -51,6 +52,7 @@ pub const GameState = struct {
     uniform_buffer_default: *gpu.Buffer = undefined,
     batcher: gfx.Batcher = undefined,
     default_texture: gfx.Texture = undefined,
+    atlas: gfx.Atlas = undefined,
     mouse: input.Mouse = undefined,
 
     // asset_manager: *AssetManager = undefined,
@@ -147,6 +149,13 @@ pub const GameState = struct {
         const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
         defer self.allocator.free(image_full_path);
 
+        const sprites_animations_json = "assets/main.json";
+        const format_sprites = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
+        const sprites_animations_full_path = try std.fmt.allocPrint(self.allocator, format_sprites, .{ base_folder, sprites_animations_json });
+        defer self.allocator.free(sprites_animations_full_path);
+        self.atlas = try gfx.Atlas.initFromFilePath(allocator, sprites_animations_full_path);
+
+        // Load game textures
         self.default_texture = try gfx.Texture.loadFromFilePath(self.allocator, image_full_path, .{ .format = core.descriptor.format });
 
         const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
@@ -252,6 +261,10 @@ pub const GameState = struct {
         self.bind_group_default.release();
         self.uniform_buffer_default.release();
         self.default_texture.deinit();
+
+        self.allocator.free(self.atlas.sprites);
+        self.allocator.free(self.atlas.animations);
+        
         self.allocator.free(self.mouse.buttons);
         self.batcher.deinit();
         self.world.deinit();

@@ -10,6 +10,7 @@ const game = @import("../main.zig");
 
 pub const Animation = @import("animation.zig").Animation;
 pub const Assetmanager = @import("asset_manager.zig").AssetManager;
+pub const Atlas = @import("atlas.zig").Atlas;
 pub const Sprite = @import("sprite.zig").Sprite;
 pub const Quad = @import("quad.zig").Quad;
 pub const Batcher = @import("batcher.zig").Batcher;

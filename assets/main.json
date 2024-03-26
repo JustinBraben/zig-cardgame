@@ -1,8 +1,18 @@
 {
     "sprites" : [
         {
-            "name": "Awkward",
-            "source": [0, 0, 32, 32],
+            "name": "Awkward_0_Frame",
+            "source": [0, 32, 32, 32],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Awkward_1_Frame",
+            "source": [32, 32, 32, 32],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Awkward_2_Frame",
+            "source": [64, 32, 32, 32],
             "origin": [0, 0]
         }
     ],
