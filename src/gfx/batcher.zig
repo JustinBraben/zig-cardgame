@@ -283,7 +283,22 @@ pub const Batcher = struct {
 
         var quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
-
+                .{
+                    .pos = .{ pos[0] + origin_x, pos[1] + height + origin_y },
+                    .uv = .{ 0.0, 0.0 },
+                },
+                .{
+                    .pos = .{ pos[0] + width + origin_x, pos[1] + height + origin_y },
+                    .uv = .{ 1.0, 0.0 },
+                },
+                .{
+                    .pos = .{ pos[0] + width + origin_x, pos[1] + origin_y },
+                    .uv = .{ 1.0, 1.0 },
+                },
+                .{
+                    .pos = .{ pos[0] + origin_x, pos[1] + origin_y },
+                    .uv = .{ 0.0, 1.0 },
+                },
             }
         };
 
