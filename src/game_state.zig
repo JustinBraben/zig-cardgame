@@ -21,6 +21,8 @@ pub const shaders = @import("shaders.zig");
 
 const assets_directory = "../../assets";
 
+pub var animations = [_]usize{ 0, 1, 2 };
+
 const Vertex = struct {
     pos: @Vector(2, f32),
     uv: @Vector(2, f32),
@@ -78,6 +80,14 @@ pub const GameState = struct {
                 self.world.add(entity, tile);
                 self.world.add(entity, Components.CardValue.Seven);
                 self.world.add(entity, Components.CardSuit.Diamonds);
+                self.world.add(entity, Components.SpriteRenderer{
+                    .index = 0,
+                });
+                self.world.add(entity, Components.SpriteAnimator{
+                    .animation = &animations,
+                    .state = .play,
+                    .fps = 2,
+                });
             }
             // const entity = self.world.create();
             // const tile = Components.Tile{ .x = index_x, .y = 0 };

@@ -3,6 +3,11 @@ pub const testing = std.testing;
 pub const Components = @import("ecs/components/components.zig");
 pub const settings = @import("settings.zig");
 const game = @import("main.zig");
+const zmath = @import("zmath");
+
+pub fn toF32x4(self: Components.Position) zmath.F32x4 {
+    return zmath.f32x4(self.x, self.y, 0.0, 0.0);
+}
 
 pub fn getTileSize() Components.Position {
     return .{

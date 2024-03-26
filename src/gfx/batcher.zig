@@ -188,7 +188,7 @@ pub const Batcher = struct {
         const max: f32 = if (!options.flip_y) 1.0 else 0.0;
         const min: f32 = if (!options.flip_y) 0.0 else 1.0;
 
-        const quad = gfx.Quad{
+        var quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
                 .{ .pos = .{ position[0], position[1] + size[1]}, .uv = .{ if (options.flip_x) max else min, min } },         // bottom-left
                 .{ .pos = .{ position[0] + size[0], position[1] + size[1] }, .uv = .{ if (options.flip_x) min else max, min } },                  // bottom-right
@@ -196,6 +196,17 @@ pub const Batcher = struct {
                 .{ .pos = .{ position[0], position[1] }, .uv = .{ if (options.flip_x) max else min, max } },                  // top-left
             }
         };
+        
+        // Set viewport of quad to the sprite
+        // Use this if you just want a specific part of the texture
+        // Currently hardcoded for 96x32 texture
+        const x = 0.0;
+        const y = 0.0;
+        const width = @as(f32, @floatFromInt(32));
+        const height = @as(f32, @floatFromInt(32));
+        const tex_width = @as(f32, @floatFromInt(96));
+        const tex_height = @as(f32, @floatFromInt(32));
+        quad.setViewport(x, y, height, width, tex_width, tex_height);
 
         return self.append(quad);
     }
@@ -309,7 +320,7 @@ pub const Batcher = struct {
         if (options.flip_y) quad.flipVertically();
 
         // Apply rotation
-        if (options.rotation > 0.0 or options.rotation < 0.0) quad.rotate(options.rotation, pos[0], pos[1], origin_x, origin_y);
+        // if (options.rotation > 0.0 or options.rotation < 0.0) quad.rotate(options.rotation, pos[0], pos[1], origin_x, origin_y);
 
         return self.append(quad);
     }
