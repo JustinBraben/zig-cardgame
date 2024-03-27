@@ -154,7 +154,7 @@ pub const Batcher = struct {
     }
 
     pub const TextureOptions = struct {
-        color: zmath.F32x4 = game.math.Colors.white.value,
+        color: zmath.F32x4 = zmath.f32x4s(1.0),
         flip_y: bool = false,
         flip_x: bool = false,
         data_0: f32 = 0.0,

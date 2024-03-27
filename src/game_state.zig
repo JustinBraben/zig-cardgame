@@ -22,7 +22,7 @@ pub const settings = @import("settings.zig");
 
 const assets_directory = "../../assets";
 
-pub var animations = [_]usize{ 0, 1, 2 };
+pub var animations = [_]usize{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
 pub const Vertex = struct {
     position: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
@@ -34,6 +34,8 @@ pub const Vertex = struct {
 pub const UniformBufferObject = struct {
     mvp: zmath.Mat,
 };
+
+pub const FinalUniformObject = @import("ecs/systems/render_final_pass.zig").FinalUniforms;
 
 const vertices = [_]Vertex{
     .{ .position = .{ 0.5, 0.5, 0.0 }, .uv = .{ 1, 0 } }, // bottom-left
@@ -56,6 +58,7 @@ pub const GameState = struct {
     index_buffer_default: *gpu.Buffer = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
     uniform_buffer_default: *gpu.Buffer = undefined,
+    uniform_buffer_final: *gpu.Buffer = undefined,
     batcher: gfx.Batcher = undefined,
     default_texture: gfx.Texture = undefined,
     default_output: gfx.Texture = undefined,
@@ -76,50 +79,49 @@ pub const GameState = struct {
 
         self.world.* = Registry.init(allocator);
 
-        // var index_x: i32 = -20;
-        // // var index_y: usize = -12;
-        // while (index_x < 20) : (index_x += 1) {
-        //     // var index_y: i32 = -12;
-        //     // while (index_y < 12) : (index_y += 1) {
-        //     //     const entity = self.world.create();
-        //     //     const tile = Components.Tile{ .x = index_x, .y = index_y };
-        //     //     self.world.add(entity, tile);
-        //     //     self.world.add(entity, Components.CardValue.Seven);
-        //     //     self.world.add(entity, Components.CardSuit.Diamonds);
-        //     //     self.world.add(entity, Components.SpriteRenderer{
-        //     //         .index = 0,
-        //     //     });
-        //     //     self.world.add(entity, Components.SpriteAnimator{
-        //     //         .animation = &animations,
-        //     //         .state = .play,
-        //     //         .fps = if (index_x + index_y < 1) 1 else @as(usize, @intCast(index_x + index_y)),
-        //     //     });
-        //     // }
-        //     const entity = self.world.create();
-        //     const tile = Components.Tile{ .x = index_x, .y = 0 };
-        //     self.world.add(entity, tile);
-        //     self.world.add(entity, Components.CardValue.Seven);
-        //     self.world.add(entity, Components.CardSuit.Diamonds);
-        //     self.world.add(entity, Components.SpriteRenderer{
-        //         .index = 0,
-        //     });
-        // }
+        var index_x: i32 = -10;
+        while (index_x < 10) : (index_x += 2) {
+            var index_y: i32 = -10;
+            while (index_y < 10) : (index_y += 2) {
+                const entity = self.world.create();
+                const tile = Components.Tile{ .x = index_x, .y = index_y };
+                self.world.add(entity, tile);
+                self.world.add(entity, Components.CardValue.Seven);
+                self.world.add(entity, Components.CardSuit.Diamonds);
+                self.world.add(entity, Components.SpriteRenderer{
+                    .index = 0,
+                });
+                self.world.add(entity, Components.SpriteAnimator{
+                    .animation = &animations,
+                    .state = .play,
+                    .fps = if (index_x + index_y < 1) 1 else @as(usize, @intCast(index_x + index_y)),
+                });
+            }
+            // const entity = self.world.create();
+            // const tile = Components.Tile{ .x = index_x, .y = 0 };
+            // self.world.add(entity, tile);
+            // self.world.add(entity, Components.CardValue.Seven);
+            // self.world.add(entity, Components.CardSuit.Diamonds);
+            // self.world.add(entity, Components.SpriteRenderer{
+            //     .index = 0,
+            // });
+        }
 
-        const entity = self.world.create();
-        const tile = Components.Tile{ .x = -1, .y = -2 };
-        self.world.add(entity, tile);
-        self.world.add(entity, Components.Position{ .x = 0.0, .y = 0.0, .z = 0.0});
-        self.world.add(entity, Components.CardValue.Seven);
-        self.world.add(entity, Components.CardSuit.Diamonds);
-        self.world.add(entity, Components.SpriteRenderer{
-            .index = 0,
-        });
-        self.world.add(entity, Components.SpriteAnimator{
-            .animation = &animations,
-            .state = .play,
-            .fps = 2,
-        });
-        self.world.add(entity, Components.Camera{});
+        // const entity = self.world.create();
+        // const tile = Components.Tile{ .x = -10, .y = -15 };
+        // self.world.add(entity, tile);
+        // self.world.add(entity, Components.Position{ .x = 0.0, .y = 0.0, .z = 0.0});
+        // self.world.add(entity, Components.CardValue.Seven);
+        // self.world.add(entity, Components.CardSuit.Diamonds);
+        // self.world.add(entity, Components.SpriteRenderer{
+        //     .index = 0,
+        // });
+        // self.world.add(entity, Components.SpriteAnimator{
+        //     .animation = &animations,
+        //     .state = .play,
+        //     .fps = 2,
+        // });
+        // self.world.add(entity, Components.Camera{});
 
         const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
         defer shader_module.release();
@@ -194,15 +196,15 @@ pub const GameState = struct {
 
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
-        const png_relative_path = "assets/Awkward_32x32_Animation.png";
+        // const png_relative_path = "assets/Awkward_32x32_Animation.png";
         // const png_relative_path = "assets/cards.png";
-        // const png_relative_path = "assets/Cards_v2.png";
+        const png_relative_path = "assets/Cards_v2.png";
         const format = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
         const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
         defer self.allocator.free(image_full_path);
 
-        const sprites_animations_json = "assets/main.json";
-        // const sprites_animations_json = "assets/card_sprite.json";
+        // const sprites_animations_json = "assets/main.json";
+        const sprites_animations_json = "assets/card_sprite.json";
         const format_sprites = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
         const sprites_animations_full_path = try std.fmt.allocPrint(self.allocator, format_sprites, .{ base_folder, sprites_animations_json });
         defer self.allocator.free(sprites_animations_full_path);
@@ -218,6 +220,12 @@ pub const GameState = struct {
         self.uniform_buffer_default = core.device.createBuffer(&.{
             .usage = .{ .copy_dst = true, .uniform = true },
             .size = @sizeOf(UniformBufferObject),
+            .mapped_at_creation = .false,
+        });
+
+        self.uniform_buffer_final = core.device.createBuffer(&.{
+            .usage = .{ .copy_dst = true, .uniform = true },
+            .size = @sizeOf(FinalUniformObject),
             .mapped_at_creation = .false,
         });
 
@@ -315,7 +323,9 @@ pub const GameState = struct {
         self.vertex_buffer_default.release();
         self.index_buffer_default.release();
         self.bind_group_default.release();
+
         self.uniform_buffer_default.release();
+        self.uniform_buffer_final.release();
 
         self.default_texture.deinit();
 

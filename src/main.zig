@@ -9,6 +9,7 @@ pub const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const RenderMainPass = @import("ecs/systems/render_main_pass.zig");
+const RenderFinalPass = @import("ecs/systems/render_final_pass.zig");
 pub const gfx = @import("gfx/gfx.zig");
 pub const settings = @import("settings.zig");
 
@@ -151,6 +152,7 @@ pub fn update(app: *App) !bool {
     { // Main Render pass
         // try RenderMainPass.run(state);
         try RenderMainPass.runSprite(state);
+        // try RenderFinalPass.run(state);
     }
 
     var batcher_commands = try state.batcher.finish();
