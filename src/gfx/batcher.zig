@@ -203,9 +203,9 @@ pub const Batcher = struct {
         const x = 0.0;
         const y = 0.0;
         const width = @as(f32, @floatFromInt(32));
-        const height = @as(f32, @floatFromInt(32));
-        const tex_width = @as(f32, @floatFromInt(96));
-        const tex_height = @as(f32, @floatFromInt(32));
+        const height = @as(f32, @floatFromInt(64));
+        const tex_width = @as(f32, @floatFromInt(592));
+        const tex_height = @as(f32, @floatFromInt(592));
         quad.setViewport(x, y, height, width, tex_width, tex_height);
 
         return self.append(quad);
@@ -287,6 +287,9 @@ pub const Batcher = struct {
         const height_transform = @as(f32, @floatFromInt(s.source[3])) / @as(f32, @floatFromInt(game.settings.window_height)) * 2.0;
         const tex_width = @as(f32, @floatFromInt(t.image.width));
         const tex_height = @as(f32, @floatFromInt(t.image.height));
+
+        // std.debug.print("Sprite x : {}, y : {}, width : {}, height : {}\n", .{ x, y, width, height });
+        // std.debug.print("Sprite width_transform : {}, height_transform : {}, tex_width : {}, tex_height : {}\n", .{ width_transform, height_transform, tex_width, tex_height});
 
         const max: f32 = if (!options.flip_y) 1.0 else 0.0;
         const min: f32 = if (!options.flip_y) 0.0 else 1.0;
