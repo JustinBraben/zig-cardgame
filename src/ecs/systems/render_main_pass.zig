@@ -13,11 +13,11 @@ pub fn run(gamestate: *GameState) !void {
     };
     // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
 
-    try gamestate.batcher.begin(.{
+    gamestate.batcher.begin(.{
         .pipeline_handle = gamestate.pipeline_default,
         .bind_group_handle = gamestate.bind_group_default,
         .output_handle = gamestate.default_texture.view_handle,
-    });
+    }) catch unreachable;
 
     var view = gamestate.world.view(.{ Components.Tile, Components.SpriteRenderer }, .{});
     var iter = view.entityIterator();
@@ -33,23 +33,37 @@ pub fn run(gamestate: *GameState) !void {
 
 pub fn runSprite(gamestate: *GameState) !void {
     const uniforms = gfx.UniformBufferObject{
-        .mvp = zmath.transpose(gamestate.camera.frameBufferMatrix()),
+        .mvp = zmath.transpose(gamestate.camera.renderTextureMatrix()),
     };
 
     try gamestate.batcher.begin(.{
         .pipeline_handle = gamestate.pipeline_default,
         .bind_group_handle = gamestate.bind_group_default,
-        .output_handle = gamestate.default_texture.view_handle,
+        .output_handle = gamestate.default_output.view_handle,
     });
 
     var view = gamestate.world.view(.{ Components.Tile, Components.SpriteRenderer }, .{});
     var iter = view.entityIterator();
     while (iter.next()) |entity| {
         const tile = view.getConst(Components.Tile, entity);
-        const tile_pos = utils.tileToPixelCoords(tile);
-        const position = utils.toF32x4(tile_pos);
+        // const tile_pos = utils.tileToPixelCoords(tile);
+        // const position = utils.toF32x4(tile_pos);
+        const position = zmath.f32x4(
+            @as(f32, @floatFromInt(tile.x)) * 32, 
+            @as(f32, @floatFromInt(tile.y)) * 32, 
+            @as(f32, @floatFromInt(tile.z)) * 32, 
+            0
+        );
+        // const screen_pos = gamestate.camera.worldToScreen(
+        //     zmath.f32x4(
+        //         @floor(position[0]), 
+        //         @floor(position[1] + game.settings.pixels_per_unit * 2.0), 
+        //         position[2],
+        //         0.0
+        //     )
+        // );
         const renderer = view.getConst(Components.SpriteRenderer, entity);
-        gamestate.batcher.spriteNew(
+        gamestate.batcher.sprite(
             position, 
             &gamestate.default_texture,
             gamestate.atlas.sprites[renderer.index],

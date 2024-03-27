@@ -6,9 +6,21 @@ const gfx = game.gfx;
 pub const Quad = struct {
     vertices: [4]gfx.Vertex,
 
+    pub fn setData(self: *Quad, data: gfx.VertexData) void {
+        for (self.vertices, 0..) |_, i| {
+            self.vertices[i].data = data.value;
+        }
+    }
+
     pub fn setHeight(self: *Quad, height: f32) void {
         for (self.vertices, 0..) |_, i| {
             self.vertices[i].position[2] = height;
+        }
+    }
+
+    pub fn setColor(self: *Quad, color: [4]f32) void {
+        for (self.vertices, 0..) |_, i| {
+            self.vertices[i].color = color;
         }
     }
 

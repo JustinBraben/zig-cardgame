@@ -18,8 +18,10 @@ pub const Texture = @import("texture.zig").Texture;
 pub const Camera = @import("Camera.zig").Camera;
 
 pub const Vertex = struct {
-    pos: @Vector(2, f32),
-    uv: @Vector(2, f32),
+    position: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
+    uv: [2]f32 = [_]f32{ 0.0, 0.0 },
+    color: [4]f32 = [_]f32{ 1.0, 1.0, 1.0, 1.0 },
+    data: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
 };
 
 pub const UniformBufferObject = struct {

@@ -154,31 +154,56 @@ pub const Batcher = struct {
     }
 
     pub const TextureOptions = struct {
+        color: zmath.F32x4 = zmath.f32x4s(1.0),
         flip_y: bool = false,
         flip_x: bool = false,
+        data_0: f32 = 0.0,
+        data_1: f32 = 0.0,
+        data_2: f32 = 0.0,
     };
 
+    /// Appends a quad at the passed position set to the size needed to render the target texture.
     pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
-        {
-            const width = @as(f32, @floatFromInt(t.image.width));
-            const height = @as(f32, @floatFromInt(t.image.height));
-            const pos = zmath.trunc(position);
-            // std.debug.print("Old texture pos : {any}\n", .{position});
-            // std.debug.print("Old texture pos truncated: {any}\n", .{pos});
+        const width = @as(f32, @floatFromInt(t.image.width));
+        const height = @as(f32, @floatFromInt(t.image.height));
+        const pos = zmath.trunc(position);
 
-            const max: f32 = if (!options.flip_y) 1.0 else 0.0;
-            const min: f32 = if (!options.flip_y) 0.0 else 1.0;
+        var color: [4]f32 = [_]f32{ 1.0, 1.0, 1.0, 1.0 };
+        zmath.store(&color, options.color, 4);
 
-            const quad = gfx.Quad{ .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ pos[0], pos[1] + height }, .uv = .{ if (options.flip_x) max else min, min } },
-                .{ .pos = .{ pos[0] + width, pos[1] + height }, .uv = .{ if (options.flip_x) min else max, min } },
-                .{ .pos = .{ pos[0] + width, pos[1] }, .uv = .{ if (options.flip_x) min else max, max } },
-                .{ .pos = .{ pos[0], pos[1] }, .uv = .{ if (options.flip_x) max else min, max } },
-            } };
-            // std.debug.print("Vertices with new texture : {any}\n", .{quad.vertices});
+        const max: f32 = if (!options.flip_y) 1.0 else 0.0;
+        const min: f32 = if (!options.flip_y) 0.0 else 1.0;
 
-            return self.append(quad);
-        }
+        const quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
+                .{
+                    .position = [3]f32{ pos[0], pos[1] + height, pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) max else min, min },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Bl
+                .{
+                    .position = [3]f32{ pos[0] + width, pos[1] + height, pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) min else max, min },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Br
+                .{
+                    .position = [3]f32{ pos[0] + width, pos[1], pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) min else max, max },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Tr
+                .{
+                    .position = [3]f32{ pos[0], pos[1], pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) max else min, max },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Tl
+            },
+        };
+
+        return self.append(quad);
     }
 
     pub fn textureSquare(self: *Batcher, position: zmath.F32x4, size: [2]f32, options: TextureOptions) !void {
@@ -258,24 +283,24 @@ pub const Batcher = struct {
     }
 
     pub const SpriteOptions = struct {
-        // color: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
+        color: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
         flip_x: bool = false,
         flip_y: bool = false,
         scale: [2]f32 = .{ 1.0, 1.0 },
-        // vert_mode: VertRenderMode = .standard,
-        // frag_mode: FragRenderMode = .standard,
+        vert_mode: VertRenderMode = .standard,
+        frag_mode: FragRenderMode = .standard,
         time: f32 = 0.0,
         rotation: f32 = 0.0,
 
-        // pub const VertRenderMode = enum {
-        //     standard,
-        //     top_sway,
-        // };
+        pub const VertRenderMode = enum {
+            standard,
+            top_sway,
+        };
 
-        // pub const FragRenderMode = enum {
-        //     standard,
-        //     palette,
-        // };
+        pub const FragRenderMode = enum {
+            standard,
+            palette,
+        };
     };
 
     pub fn spriteNew(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, s: gfx.Sprite, options: SpriteOptions) !void {
@@ -297,19 +322,19 @@ pub const Batcher = struct {
         var quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
                 .{  // top-left 
-                    .pos = .{ position[0], position[1] + height_transform}, 
+                    .position = .{ position[0], position[1] + height_transform}, 
                     .uv = .{ if (options.flip_x) max else min, min } 
                 },
                 .{  // top-right
-                    .pos = .{ position[0] + width_transform, position[1] + height_transform }, 
+                    .position = .{ position[0] + width_transform, position[1] + height_transform }, 
                     .uv = .{ if (options.flip_x) min else max, min } 
                 },
                 .{  // bottom-right 
-                    .pos = .{ position[0] + width_transform, position[1] }, 
+                    .position = .{ position[0] + width_transform, position[1] }, 
                     .uv = .{ if (options.flip_x) min else max, max } 
                 },
                 .{  // bottom-left 
-                    .pos = .{ position[0], position[1] }, 
+                    .position = .{ position[0], position[1] }, 
                     .uv = .{ if (options.flip_x) max else min, max } 
                 },
             }
@@ -325,6 +350,7 @@ pub const Batcher = struct {
         return self.append(quad);
     }
 
+    /// Appends a quad to the batcher set to the size needed to render the target sprite from the target texture.
     pub fn sprite(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, s: gfx.Sprite, options: SpriteOptions) !void {
         const x = @as(f32, @floatFromInt(s.source[0]));
         const y = @as(f32, @floatFromInt(s.source[1]));
@@ -339,35 +365,54 @@ pub const Batcher = struct {
         const origin_y = if (options.flip_y) -o_y else o_y - height;
         const pos = @trunc(position);
 
-        var quad = gfx.Quad{ .vertices = [_]gfx.Vertex{
+        const vert_mode: f32 = switch (options.vert_mode) {
+            .standard => 0.0,
+            .top_sway => 1.0,
+        };
+
+        const frag_mode: f32 = switch (options.frag_mode) {
+            .standard => 0.0,
+            .palette => 1.0,
+        };
+
+        var quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
                 .{
-                    .pos = .{ pos[0] + origin_x, pos[1] + height + origin_y },
-                    .uv = .{ 0.0, 0.0 },
-                },
+                    .position = [3]f32{ (pos[0] + origin_x), (pos[1] + height) + origin_y, pos[2] },
+                    .uv = [2]f32{ 0.0, 0.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Bl
                 .{
-                    .pos = .{ pos[0] + width + origin_x, pos[1] + height + origin_y },
-                    .uv = .{ 1.0, 0.0 },
-                },
+                    .position = [3]f32{ (pos[0] + width + origin_x), (pos[1] + height) + origin_y, pos[2] },
+                    .uv = [2]f32{ 1.0, 0.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Br
                 .{
-                    .pos = .{ pos[0] + width + origin_x, pos[1] + origin_y },
-                    .uv = .{ 1.0, 1.0 },
-                },
+                    .position = [3]f32{ (pos[0] + width + origin_x), (pos[1]) + origin_y, pos[2] },
+                    .uv = [2]f32{ 1.0, 1.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Tr
                 .{
-                    .pos = .{ pos[0] + origin_x, pos[1] + origin_y },
-                    .uv = .{ 0.0, 1.0 },
-                },
-            } 
+                    .position = [3]f32{ (pos[0] + origin_x), (pos[1]) + origin_y, pos[2] },
+                    .uv = [2]f32{ 0.0, 1.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Tl
+            },
         };
 
         // Set viewport of quad to the sprite
-        quad.setViewport(x, y, height, width, tex_width, tex_height);
+        quad.setViewport(x, y, width, height, tex_width, tex_height);
 
         // Apply mirroring
         if (options.flip_x) quad.flipHorizontally();
         if (options.flip_y) quad.flipVertically();
 
         // Apply rotation
-        // if (options.rotation > 0.0 or options.rotation < 0.0) quad.rotate(options.rotation, pos[0], pos[1], origin_x, origin_y);
+        if (options.rotation > 0.0 or options.rotation < 0.0) quad.rotate(options.rotation, pos[0], pos[1], origin_x, origin_y);
 
         return self.append(quad);
     }

@@ -9,6 +9,7 @@ pub const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
 const RenderMainPass = @import("ecs/systems/render_main_pass.zig");
+const RenderFinalPass = @import("ecs/systems/render_final_pass.zig");
 pub const gfx = @import("gfx/gfx.zig");
 pub const settings = @import("settings.zig");
 
@@ -138,12 +139,20 @@ pub fn update(app: *App) !bool {
         }
     }
 
+    var cameraView = state.world.view(.{ Components.Camera, Components.Position }, .{});
+    var cameraIter = cameraView.entityIterator();
+    while (cameraIter.next()) |entity| {
+        const position = cameraView.get(Components.Position, entity);
+        state.camera.position = zmath.f32x4(position.x, position.y, position.z, 0);
+    }
+
     // try state.renderUsingBatch();
     // try state.renderUsingNewTextureAndCamera();
 
     { // Main Render pass
         // try RenderMainPass.run(state);
         try RenderMainPass.runSprite(state);
+        // try RenderFinalPass.run(state);
     }
 
     var batcher_commands = try state.batcher.finish();
