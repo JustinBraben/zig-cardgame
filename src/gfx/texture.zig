@@ -24,8 +24,8 @@ pub const Texture = struct {
     pub fn createEmpty(allocator: Allocator, width: u32, height: u32, options: Texture.TextureOptions) !Texture {
         const width_convertted = @as(usize, @intCast(width));
         const height_convertted = @as(usize, @intCast(height));
-        const image = try zigimg.Image.create(allocator, width_convertted, height_convertted, .{});
-        return create(image, options);
+        const image = try zigimg.Image.create(allocator, width_convertted, height_convertted, .rgba32);
+        return create(allocator, image, options);
     }
 
     pub fn loadFromFilePath(allocator: Allocator, filePath: []const u8, options: Texture.TextureOptions) !Texture {

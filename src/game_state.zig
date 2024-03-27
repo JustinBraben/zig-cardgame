@@ -18,6 +18,7 @@ const Prefabs = @import("ecs/prefabs.zig").Prefabs;
 pub const utils = @import("utils.zig");
 pub const gfx = @import("gfx/gfx.zig");
 pub const shaders = @import("shaders.zig");
+pub const settings = @import("settings.zig");
 
 const assets_directory = "../../assets";
 
@@ -57,6 +58,8 @@ pub const GameState = struct {
     uniform_buffer_default: *gpu.Buffer = undefined,
     batcher: gfx.Batcher = undefined,
     default_texture: gfx.Texture = undefined,
+    default_output: gfx.Texture = undefined,
+    final_output: gfx.Texture = undefined,
     atlas: gfx.Atlas = undefined,
     mouse: input.Mouse = undefined,
 
@@ -103,9 +106,9 @@ pub const GameState = struct {
         // }
 
         const entity = self.world.create();
-        const tile = Components.Tile{ .x = 1, .y = 1 };
+        const tile = Components.Tile{ .x = -1, .y = -2 };
         self.world.add(entity, tile);
-        self.world.add(entity, Components.Position{ .x = 32.0, .y = 32.0, .z = 32.0});
+        self.world.add(entity, Components.Position{ .x = 0.0, .y = 0.0, .z = 0.0});
         self.world.add(entity, Components.CardValue.Seven);
         self.world.add(entity, Components.CardSuit.Diamonds);
         self.world.add(entity, Components.SpriteRenderer{
@@ -207,6 +210,8 @@ pub const GameState = struct {
 
         // Load game textures
         self.default_texture = try gfx.Texture.loadFromFilePath(self.allocator, image_full_path, .{ .format = core.descriptor.format });
+        self.default_output = try gfx.Texture.createEmpty(self.allocator, settings.design_width, settings.design_height, . { .format = core.descriptor.format});
+        self.final_output = try gfx.Texture.createEmpty(self.allocator, settings.design_width, settings.design_height, . { .format = core.descriptor.format});
 
         const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
 
@@ -311,7 +316,11 @@ pub const GameState = struct {
         self.index_buffer_default.release();
         self.bind_group_default.release();
         self.uniform_buffer_default.release();
+
         self.default_texture.deinit();
+
+        self.default_output.deinit();
+        self.final_output.deinit();
 
         self.allocator.free(self.atlas.sprites);
         self.allocator.free(self.atlas.animations);

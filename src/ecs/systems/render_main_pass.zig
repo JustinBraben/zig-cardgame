@@ -33,13 +33,13 @@ pub fn run(gamestate: *GameState) !void {
 
 pub fn runSprite(gamestate: *GameState) !void {
     const uniforms = gfx.UniformBufferObject{
-        .mvp = zmath.transpose(gamestate.camera.frameBufferMatrix()),
+        .mvp = zmath.transpose(gamestate.camera.renderTextureMatrix()),
     };
 
     try gamestate.batcher.begin(.{
         .pipeline_handle = gamestate.pipeline_default,
         .bind_group_handle = gamestate.bind_group_default,
-        .output_handle = gamestate.default_texture.view_handle,
+        .output_handle = gamestate.final_output.view_handle,
     });
 
     var view = gamestate.world.view(.{ Components.Tile, Components.SpriteRenderer }, .{});
@@ -58,7 +58,8 @@ pub fn runSprite(gamestate: *GameState) !void {
             zmath.f32x4(
                 @floor(position[0]), 
                 @floor(position[1] + game.settings.pixels_per_unit * 2.0), 
-                position[2], 0.0
+                position[2],
+                0.0
             )
         );
         const renderer = view.getConst(Components.SpriteRenderer, entity);
