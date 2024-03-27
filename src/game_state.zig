@@ -43,6 +43,7 @@ const vertices = [_]Vertex{
 
 const index_data = [_]u32{ 0, 1, 2, 2, 3, 0 };
 
+// TODO: create textures to render to!
 pub const GameState = struct {
     allocator: Allocator = undefined,
     delta_time: f32 = 0.0,
