@@ -23,9 +23,11 @@ const assets_directory = "../../assets";
 
 pub var animations = [_]usize{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
-const Vertex = struct {
-    pos: @Vector(2, f32),
-    uv: @Vector(2, f32),
+pub const Vertex = struct {
+    position: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
+    uv: [2]f32 = [_]f32{ 0.0, 0.0 },
+    color: [4]f32 = [_]f32{ 1.0, 1.0, 1.0, 1.0 },
+    data: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
 };
 
 pub const UniformBufferObject = struct {
@@ -33,10 +35,10 @@ pub const UniformBufferObject = struct {
 };
 
 const vertices = [_]Vertex{
-    .{ .pos = .{ 0.5, 0.5 }, .uv = .{ 1, 0 } }, // bottom-left
-    .{ .pos = .{ -0.5, 0.5 }, .uv = .{ 0, 0 } }, // bottom-right
-    .{ .pos = .{ -0.5, -0.5 }, .uv = .{ 0, 1 } }, // top-right
-    .{ .pos = .{ 0.5, -0.5 }, .uv = .{ 1, 1 } }, // top-left
+    .{ .position = .{ 0.5, 0.5, 0.0 }, .uv = .{ 1, 0 } }, // bottom-left
+    .{ .position = .{ -0.5, 0.5, 0.0 }, .uv = .{ 0, 0 } }, // bottom-right
+    .{ .position = .{ -0.5, -0.5, 0.0 }, .uv = .{ 0, 1 } }, // top-right
+    .{ .position = .{ 0.5, -0.5, 0.0 }, .uv = .{ 1, 1 } }, // top-left
 };
 
 const index_data = [_]u32{ 0, 1, 2, 2, 3, 0 };
@@ -100,8 +102,9 @@ pub const GameState = struct {
         // }
 
         const entity = self.world.create();
-        const tile = Components.Tile{ .x = 0, .y = 0 };
+        const tile = Components.Tile{ .x = 1, .y = 1 };
         self.world.add(entity, tile);
+        self.world.add(entity, Components.Position{ .x = 32, .y = 32 });
         self.world.add(entity, Components.CardValue.Seven);
         self.world.add(entity, Components.CardSuit.Diamonds);
         self.world.add(entity, Components.SpriteRenderer{
@@ -113,12 +116,14 @@ pub const GameState = struct {
             .fps = 2,
         });
 
-        const shader_module = core.device.createShaderModuleWGSL("textured-quad.wgsl", shaders.textured_quad);
+        const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
         defer shader_module.release();
 
         const vertex_attributes = [_]gpu.VertexAttribute{
-            .{ .format = .float32x4, .offset = @offsetOf(Vertex, "pos"), .shader_location = 0 },
+            .{ .format = .float32x3, .offset = @offsetOf(Vertex, "position"), .shader_location = 0 },
             .{ .format = .float32x2, .offset = @offsetOf(Vertex, "uv"), .shader_location = 1 },
+            .{ .format = .float32x4, .offset = @offsetOf(Vertex, "color"), .shader_location = 2 },
+            .{ .format = .float32x3, .offset = @offsetOf(Vertex, "data"), .shader_location = 3 },
         };
         const vertex_buffer_layout = gpu.VertexBufferLayout.init(.{
             .array_stride = @sizeOf(Vertex),
@@ -126,22 +131,37 @@ pub const GameState = struct {
             .attributes = &vertex_attributes,
         });
 
-        const blend = gpu.BlendState{};
+        const blend = gpu.BlendState{
+            .color = .{
+                .operation = .add,
+                .src_factor = .src_alpha,
+                .dst_factor = .one_minus_src_alpha,
+            },
+            .alpha = .{
+                .operation = .add,
+                .src_factor = .src_alpha,
+                .dst_factor = .one_minus_src_alpha,
+            },
+        };
+
         const color_target = gpu.ColorTargetState{
             .format = core.descriptor.format,
             .blend = &blend,
             .write_mask = gpu.ColorWriteMaskFlags.all,
         };
+
         const default_fragment = gpu.FragmentState.init(.{
             .module = shader_module,
             .entry_point = "frag_main",
             .targets = &.{color_target},
         });
+
         const default_vertex = gpu.VertexState.init(.{
             .module = shader_module,
-            .entry_point = "vertex_main",
+            .entry_point = "vert_main",
             .buffers = &.{vertex_buffer_layout},
         });
+        
         const pipeline_descriptor = gpu.RenderPipeline.Descriptor{
             .fragment = &default_fragment,
             .vertex = default_vertex,
@@ -188,26 +208,27 @@ pub const GameState = struct {
 
         const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
 
-        const bind_group_layout = pipeline.getBindGroupLayout(0);
-        const bind_group = core.device.createBindGroup(
-            &gpu.BindGroup.Descriptor.init(.{
-                .layout = bind_group_layout,
-                .entries = &.{
-                    gpu.BindGroup.Entry.sampler(0, self.default_texture.sampler_handle),
-                    gpu.BindGroup.Entry.textureView(1, texture_view),
-                },
-            }),
-        );
-
         self.uniform_buffer_default = core.device.createBuffer(&.{
             .usage = .{ .copy_dst = true, .uniform = true },
             .size = @sizeOf(UniformBufferObject),
             .mapped_at_creation = .false,
         });
 
+        const pipeline_layout_default = pipeline.getBindGroupLayout(0);
+        const bind_group = core.device.createBindGroup(
+            &gpu.BindGroup.Descriptor.init(.{
+                .layout = pipeline_layout_default,
+                .entries = &.{
+                    gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
+                    gpu.BindGroup.Entry.textureView(1, self.default_texture.view_handle),
+                    gpu.BindGroup.Entry.sampler(2, self.default_texture.sampler_handle),
+                },
+            }),
+        );
+
         self.batcher = try gfx.Batcher.init(allocator, 1);
         texture_view.release();
-        bind_group_layout.release();
+        pipeline_layout_default.release();
 
         self.pipeline_default = pipeline;
         self.vertex_buffer_default = vertex_buffer;

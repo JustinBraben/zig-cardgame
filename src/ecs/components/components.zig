@@ -6,8 +6,9 @@ const ecs = @import("zig-ecs");
 const sprites = @import("sprites.zig");
 
 pub const Position = struct {
-    x: f32,
-    y: f32,
+    x: f32 = 0.0,
+    y: f32 = 0.0,
+    z: f32 = 0.0,
 };
 
 pub const CardValue = enum {
@@ -31,6 +32,7 @@ pub const CardSuit = enum { Spades, Hearts, Diamonds, Clubs };
 pub const Tile = struct {
     x: i32 = 0,
     y: i32 = 0,
+    z: i32 = 0,
 };
 
 pub const SpriteRenderer = sprites.SpriteRenderer;

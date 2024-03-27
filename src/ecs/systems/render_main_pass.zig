@@ -46,10 +46,16 @@ pub fn runSprite(gamestate: *GameState) !void {
     var iter = view.entityIterator();
     while (iter.next()) |entity| {
         const tile = view.getConst(Components.Tile, entity);
-        const tile_pos = utils.tileToPixelCoords(tile);
-        const position = utils.toF32x4(tile_pos);
+        // const tile_pos = utils.tileToPixelCoords(tile);
+        // const position = utils.toF32x4(tile_pos);
+        const position = zmath.f32x4(
+            @as(f32, @floatFromInt(tile.x)) * 32, 
+            @as(f32, @floatFromInt(tile.y)) * 32, 
+            @as(f32, @floatFromInt(tile.z)) * 32, 
+            0
+        );
         const renderer = view.getConst(Components.SpriteRenderer, entity);
-        gamestate.batcher.spriteNew(
+        gamestate.batcher.sprite(
             position, 
             &gamestate.default_texture,
             gamestate.atlas.sprites[renderer.index],

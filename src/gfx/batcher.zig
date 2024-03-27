@@ -154,8 +154,12 @@ pub const Batcher = struct {
     }
 
     pub const TextureOptions = struct {
+        color: zmath.F32x4 = game.math.Colors.white.value,
         flip_y: bool = false,
         flip_x: bool = false,
+        data_0: f32 = 0.0,
+        data_1: f32 = 0.0,
+        data_2: f32 = 0.0,
     };
 
     pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
@@ -258,24 +262,24 @@ pub const Batcher = struct {
     }
 
     pub const SpriteOptions = struct {
-        // color: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
+        color: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
         flip_x: bool = false,
         flip_y: bool = false,
         scale: [2]f32 = .{ 1.0, 1.0 },
-        // vert_mode: VertRenderMode = .standard,
-        // frag_mode: FragRenderMode = .standard,
+        vert_mode: VertRenderMode = .standard,
+        frag_mode: FragRenderMode = .standard,
         time: f32 = 0.0,
         rotation: f32 = 0.0,
 
-        // pub const VertRenderMode = enum {
-        //     standard,
-        //     top_sway,
-        // };
+        pub const VertRenderMode = enum {
+            standard,
+            top_sway,
+        };
 
-        // pub const FragRenderMode = enum {
-        //     standard,
-        //     palette,
-        // };
+        pub const FragRenderMode = enum {
+            standard,
+            palette,
+        };
     };
 
     pub fn spriteNew(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, s: gfx.Sprite, options: SpriteOptions) !void {
@@ -297,19 +301,19 @@ pub const Batcher = struct {
         var quad = gfx.Quad{
             .vertices = [_]gfx.Vertex{
                 .{  // top-left 
-                    .pos = .{ position[0], position[1] + height_transform}, 
+                    .position = .{ position[0], position[1] + height_transform}, 
                     .uv = .{ if (options.flip_x) max else min, min } 
                 },
                 .{  // top-right
-                    .pos = .{ position[0] + width_transform, position[1] + height_transform }, 
+                    .position = .{ position[0] + width_transform, position[1] + height_transform }, 
                     .uv = .{ if (options.flip_x) min else max, min } 
                 },
                 .{  // bottom-right 
-                    .pos = .{ position[0] + width_transform, position[1] }, 
+                    .position = .{ position[0] + width_transform, position[1] }, 
                     .uv = .{ if (options.flip_x) min else max, max } 
                 },
                 .{  // bottom-left 
-                    .pos = .{ position[0], position[1] }, 
+                    .position = .{ position[0], position[1] }, 
                     .uv = .{ if (options.flip_x) max else min, max } 
                 },
             }
@@ -325,6 +329,7 @@ pub const Batcher = struct {
         return self.append(quad);
     }
 
+    /// Appends a quad to the batcher set to the size needed to render the target sprite from the target texture.
     pub fn sprite(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, s: gfx.Sprite, options: SpriteOptions) !void {
         const x = @as(f32, @floatFromInt(s.source[0]));
         const y = @as(f32, @floatFromInt(s.source[1]));
@@ -339,35 +344,54 @@ pub const Batcher = struct {
         const origin_y = if (options.flip_y) -o_y else o_y - height;
         const pos = @trunc(position);
 
-        var quad = gfx.Quad{ .vertices = [_]gfx.Vertex{
+        const vert_mode: f32 = switch (options.vert_mode) {
+            .standard => 0.0,
+            .top_sway => 1.0,
+        };
+
+        const frag_mode: f32 = switch (options.frag_mode) {
+            .standard => 0.0,
+            .palette => 1.0,
+        };
+
+        var quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
                 .{
-                    .pos = .{ pos[0] + origin_x, pos[1] + height + origin_y },
-                    .uv = .{ 0.0, 0.0 },
-                },
+                    .position = [3]f32{ (pos[0] + origin_x), (pos[1] + height) + origin_y, pos[2] },
+                    .uv = [2]f32{ 0.0, 0.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Bl
                 .{
-                    .pos = .{ pos[0] + width + origin_x, pos[1] + height + origin_y },
-                    .uv = .{ 1.0, 0.0 },
-                },
+                    .position = [3]f32{ (pos[0] + width + origin_x), (pos[1] + height) + origin_y, pos[2] },
+                    .uv = [2]f32{ 1.0, 0.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Br
                 .{
-                    .pos = .{ pos[0] + width + origin_x, pos[1] + origin_y },
-                    .uv = .{ 1.0, 1.0 },
-                },
+                    .position = [3]f32{ (pos[0] + width + origin_x), (pos[1]) + origin_y, pos[2] },
+                    .uv = [2]f32{ 1.0, 1.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Tr
                 .{
-                    .pos = .{ pos[0] + origin_x, pos[1] + origin_y },
-                    .uv = .{ 0.0, 1.0 },
-                },
-            } 
+                    .position = [3]f32{ (pos[0] + origin_x), (pos[1]) + origin_y, pos[2] },
+                    .uv = [2]f32{ 0.0, 1.0 },
+                    .color = options.color,
+                    .data = [3]f32{ vert_mode, frag_mode, options.time },
+                }, //Tl
+            },
         };
 
         // Set viewport of quad to the sprite
-        quad.setViewport(x, y, height, width, tex_width, tex_height);
+        quad.setViewport(x, y, width, height, tex_width, tex_height);
 
         // Apply mirroring
         if (options.flip_x) quad.flipHorizontally();
         if (options.flip_y) quad.flipVertically();
 
         // Apply rotation
-        // if (options.rotation > 0.0 or options.rotation < 0.0) quad.rotate(options.rotation, pos[0], pos[1], origin_x, origin_y);
+        if (options.rotation > 0.0 or options.rotation < 0.0) quad.rotate(options.rotation, pos[0], pos[1], origin_x, origin_y);
 
         return self.append(quad);
     }
