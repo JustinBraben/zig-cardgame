@@ -13,11 +13,11 @@ pub fn run(gamestate: *GameState) !void {
     };
     // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
 
-    try gamestate.batcher.begin(.{
+    gamestate.batcher.begin(.{
         .pipeline_handle = gamestate.pipeline_default,
         .bind_group_handle = gamestate.bind_group_default,
         .output_handle = gamestate.default_texture.view_handle,
-    });
+    }) catch unreachable;
 
     var view = gamestate.world.view(.{ Components.Tile, Components.SpriteRenderer }, .{});
     var iter = view.entityIterator();
@@ -54,9 +54,16 @@ pub fn runSprite(gamestate: *GameState) !void {
             @as(f32, @floatFromInt(tile.z)) * 32, 
             0
         );
+        const screen_pos = gamestate.camera.worldToScreen(
+            zmath.f32x4(
+                @floor(position[0]), 
+                @floor(position[1] + game.settings.pixels_per_unit * 2.0), 
+                position[2], 0.0
+            )
+        );
         const renderer = view.getConst(Components.SpriteRenderer, entity);
         gamestate.batcher.sprite(
-            position, 
+            screen_pos, 
             &gamestate.default_texture,
             gamestate.atlas.sprites[renderer.index],
             .{

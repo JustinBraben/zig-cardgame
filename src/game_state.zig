@@ -21,7 +21,7 @@ pub const shaders = @import("shaders.zig");
 
 const assets_directory = "../../assets";
 
-pub var animations = [_]usize{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+pub var animations = [_]usize{ 0, 1, 2 };
 
 pub const Vertex = struct {
     position: [3]f32 = [_]f32{ 0.0, 0.0, 0.0 },
@@ -104,7 +104,7 @@ pub const GameState = struct {
         const entity = self.world.create();
         const tile = Components.Tile{ .x = 1, .y = 1 };
         self.world.add(entity, tile);
-        self.world.add(entity, Components.Position{ .x = 32, .y = 32 });
+        self.world.add(entity, Components.Position{ .x = 32.0, .y = 32.0, .z = 32.0});
         self.world.add(entity, Components.CardValue.Seven);
         self.world.add(entity, Components.CardSuit.Diamonds);
         self.world.add(entity, Components.SpriteRenderer{
@@ -115,6 +115,7 @@ pub const GameState = struct {
             .state = .play,
             .fps = 2,
         });
+        self.world.add(entity, Components.Camera{});
 
         const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
         defer shader_module.release();
@@ -189,15 +190,15 @@ pub const GameState = struct {
 
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
-        // const png_relative_path = "assets/Awkward_32x32_Animation.png";
+        const png_relative_path = "assets/Awkward_32x32_Animation.png";
         // const png_relative_path = "assets/cards.png";
-        const png_relative_path = "assets/Cards_v2.png";
+        // const png_relative_path = "assets/Cards_v2.png";
         const format = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
         const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
         defer self.allocator.free(image_full_path);
 
-        // const sprites_animations_json = "assets/main.json";
-        const sprites_animations_json = "assets/card_sprite.json";
+        const sprites_animations_json = "assets/main.json";
+        // const sprites_animations_json = "assets/card_sprite.json";
         const format_sprites = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
         const sprites_animations_full_path = try std.fmt.allocPrint(self.allocator, format_sprites, .{ base_folder, sprites_animations_json });
         defer self.allocator.free(sprites_animations_full_path);

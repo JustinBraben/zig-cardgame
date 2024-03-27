@@ -37,3 +37,6 @@ pub const Tile = struct {
 
 pub const SpriteRenderer = sprites.SpriteRenderer;
 pub const SpriteAnimator = sprites.SpriteAnimator;
+
+
+pub const Camera = struct {};

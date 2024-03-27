@@ -162,27 +162,48 @@ pub const Batcher = struct {
         data_2: f32 = 0.0,
     };
 
+    /// Appends a quad at the passed position set to the size needed to render the target texture.
     pub fn texture(self: *Batcher, position: zmath.F32x4, t: *gfx.Texture, options: TextureOptions) !void {
-        {
-            const width = @as(f32, @floatFromInt(t.image.width));
-            const height = @as(f32, @floatFromInt(t.image.height));
-            const pos = zmath.trunc(position);
-            // std.debug.print("Old texture pos : {any}\n", .{position});
-            // std.debug.print("Old texture pos truncated: {any}\n", .{pos});
+        const width = @as(f32, @floatFromInt(t.image.width));
+        const height = @as(f32, @floatFromInt(t.image.height));
+        const pos = zmath.trunc(position);
 
-            const max: f32 = if (!options.flip_y) 1.0 else 0.0;
-            const min: f32 = if (!options.flip_y) 0.0 else 1.0;
+        var color: [4]f32 = [_]f32{ 1.0, 1.0, 1.0, 1.0 };
+        zmath.store(&color, options.color, 4);
 
-            const quad = gfx.Quad{ .vertices = [_]gfx.Vertex{
-                .{ .pos = .{ pos[0], pos[1] + height }, .uv = .{ if (options.flip_x) max else min, min } },
-                .{ .pos = .{ pos[0] + width, pos[1] + height }, .uv = .{ if (options.flip_x) min else max, min } },
-                .{ .pos = .{ pos[0] + width, pos[1] }, .uv = .{ if (options.flip_x) min else max, max } },
-                .{ .pos = .{ pos[0], pos[1] }, .uv = .{ if (options.flip_x) max else min, max } },
-            } };
-            // std.debug.print("Vertices with new texture : {any}\n", .{quad.vertices});
+        const max: f32 = if (!options.flip_y) 1.0 else 0.0;
+        const min: f32 = if (!options.flip_y) 0.0 else 1.0;
 
-            return self.append(quad);
-        }
+        const quad = gfx.Quad{
+            .vertices = [_]gfx.Vertex{
+                .{
+                    .position = [3]f32{ pos[0], pos[1] + height, pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) max else min, min },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Bl
+                .{
+                    .position = [3]f32{ pos[0] + width, pos[1] + height, pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) min else max, min },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Br
+                .{
+                    .position = [3]f32{ pos[0] + width, pos[1], pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) min else max, max },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Tr
+                .{
+                    .position = [3]f32{ pos[0], pos[1], pos[2] },
+                    .uv = [2]f32{ if (options.flip_x) max else min, max },
+                    .color = color,
+                    .data = [3]f32{ options.data_0, options.data_1, options.data_2 },
+                }, //Tl
+            },
+        };
+
+        return self.append(quad);
     }
 
     pub fn textureSquare(self: *Batcher, position: zmath.F32x4, size: [2]f32, options: TextureOptions) !void {

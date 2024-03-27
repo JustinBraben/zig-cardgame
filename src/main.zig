@@ -138,6 +138,13 @@ pub fn update(app: *App) !bool {
         }
     }
 
+    var cameraView = state.world.view(.{ Components.Camera, Components.Position }, .{});
+    var cameraIter = cameraView.entityIterator();
+    while (cameraIter.next()) |entity| {
+        const position = cameraView.get(Components.Position, entity);
+        state.camera.position = zmath.f32x4(position.x, position.y, position.z, 0);
+    }
+
     // try state.renderUsingBatch();
     // try state.renderUsingNewTextureAndCamera();
 
