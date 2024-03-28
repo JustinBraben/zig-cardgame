@@ -241,70 +241,55 @@ pub const GameState = struct {
         return self;
     }
 
-    /// How to render leveraging Batcher
-    pub fn renderUsingBatch(self: *GameState) !void {
-        // const uniforms = gfx.UniformBufferObject{
-        // .mvp = zmath.transpose(
-        //         zmath.orthographicRh(
-        //             @as(f32, @floatFromInt(core.size().width)),
-        //             @as(f32, @floatFromInt(core.size().height)),
-        //             0.1,
-        //             1000
-        //         )
-        //     ),
-        // };
+    /// Create solitaire game
+    pub fn createSolitaire(self: *GameState) void {
 
-        const uniforms = gfx.UniformBufferObject{
-            .mvp = zmath.transpose(self.camera.frameBufferMatrix()),
-        };
+        // Generate deck of cards
+        generateDeck(self);
 
-        const position = zmath.f32x4(0.5, -0.5, -0.5, 0.5);
+        // Shuffle deck of cards
 
-        try self.batcher.begin(.{
-            .pipeline_handle = self.pipeline_default,
-            .bind_group_handle = self.bind_group_default,
-            .output_handle = self.default_texture.view_handle,
-        });
-
-        // var view = self.world.view(.{ Components.Tile }, .{});
-        // var iter = view.entityIterator();
-        // while (iter.next()) |entity| {
-        //     const tile = view.getConst(Components.Tile, entity);
-        //     const tile_pos = utils.tileToPixelCoords(tile);
-        // }
-
-        try self.batcher.oldTexture(position, &self.default_texture, .{});
-        try self.batcher.end(uniforms, self.uniform_buffer_default);
-
-        var batcher_commands = try self.batcher.finish();
-
-        core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-        batcher_commands.release();
-        core.swap_chain.present();
+        // Deal cards to table
+        
+        // Create foundation piles
     }
 
-    pub fn renderUsingNewTextureAndCamera(self: *GameState) !void {
-        const uniforms = gfx.UniformBufferObject{
-            .mvp = zmath.transpose(self.camera.frameBufferMatrix()),
+    pub fn generateDeck(self: *GameState) void {
+        
+        const suits = [_]Components.CardSuit{ 
+            Components.CardSuit.Clubs, 
+            Components.CardSuit.Diamonds, 
+            Components.CardSuit.Hearts, 
+            Components.CardSuit.Spades 
         };
-        // std.debug.print("camera mvp : {any}\n", .{uniforms.mvp});
 
-        try self.batcher.begin(.{
-            .pipeline_handle = self.pipeline_default,
-            .bind_group_handle = self.bind_group_default,
-            .output_handle = self.default_texture.view_handle,
-        });
+        const values = [_]Components.CardValue{ 
+            Components.CardValue.Ace, 
+            Components.CardValue.Two, 
+            Components.CardValue.Three, 
+            Components.CardValue.Four, 
+            Components.CardValue.Five, 
+            Components.CardValue.Six, 
+            Components.CardValue.Seven, 
+            Components.CardValue.Eight, 
+            Components.CardValue.Nine, 
+            Components.CardValue.Ten, 
+            Components.CardValue.Jack, 
+            Components.CardValue.Queen, 
+            Components.CardValue.King 
+        };
 
-        var view = self.world.view(.{ Components.Tile, Components.CardValue }, .{});
-        var iter = view.entityIterator();
-        const size = utils.getTileSize();
-        while (iter.next()) |entity| {
-            const tile = view.getConst(Components.Tile, entity);
-            const tile_pos = utils.tileToPixelCoords(tile);
-            try self.batcher.textureSquare(zmath.f32x4(tile_pos.x, tile_pos.y, 0, 0), .{ size.x, size.y }, .{});
+        for (suits) |suit| {
+            for (values) |value| {
+                const entity = self.world.create();
+                self.world.add(entity, suit);
+                self.world.add(entity, value);
+                self.world.add(entity, Components.SpriteRenderer{
+                    .index = 0,
+                });
+            }
         }
 
-        try self.batcher.end(uniforms, self.uniform_buffer_default);
     }
 
     pub fn deinit(self: *GameState) void {

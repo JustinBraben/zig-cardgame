@@ -2,67 +2,67 @@
     "sprites" : [
         {
             "name": "Ace_of_Diamonds",
-            "source": [0, 0, 44, 64],
+            "source": [0, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Two_of_Diamonds",
-            "source": [44, 0, 44, 64],
+            "source": [44, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Three_of_Diamonds",
-            "source": [88, 0, 44, 64],
+            "source": [88, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Four_of_Diamonds",
-            "source": [132, 0, 44, 64],
+            "source": [132, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Five_of_Diamonds",
-            "source": [176, 0, 44, 64],
+            "source": [176, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Six_of_Diamonds",
-            "source": [220, 0, 44, 64],
+            "source": [220, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Seven_of_Diamonds",
-            "source": [264, 0, 44, 64],
+            "source": [264, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Eight_of_Diamonds",
-            "source": [308, 0, 44, 64],
+            "source": [308, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Nine_of_Diamonds",
-            "source": [352, 0, 44, 64],
+            "source": [352, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Ten_of_Diamonds",
-            "source": [396, 0, 44, 64],
+            "source": [396, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Jack_of_Diamonds",
-            "source": [440, 0, 44, 64],
+            "source": [440, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "Queen_of_Diamonds",
-            "source": [484, 0, 44, 64],
+            "source": [484, 320, 44, 64],
             "origin": [0, 0]
         },
         {
             "name": "King_of_Diamonds",
-            "source": [528, 0, 44, 64],
+            "source": [528, 320, 44, 64],
             "origin": [0, 0]
         }
     ],
