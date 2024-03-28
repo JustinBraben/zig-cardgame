@@ -57,10 +57,12 @@ pub const GameState = struct {
     vertex_buffer_default: *gpu.Buffer = undefined,
     index_buffer_default: *gpu.Buffer = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
+    bind_group_game_window: *gpu.BindGroup = undefined,
     uniform_buffer_default: *gpu.Buffer = undefined,
     uniform_buffer_final: *gpu.Buffer = undefined,
     batcher: gfx.Batcher = undefined,
     default_texture: gfx.Texture = undefined,
+    game_window_texture: gfx.Texture = undefined,
     default_output: gfx.Texture = undefined,
     final_output: gfx.Texture = undefined,
     atlas: gfx.Atlas = undefined,
@@ -185,22 +187,25 @@ pub const GameState = struct {
 
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
-        // const png_relative_path = "assets/Awkward_32x32_Animation.png";
-        // const png_relative_path = "assets/cards.png";
-        const png_relative_path = "assets/Cards_v2.png";
         const format = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
-        const image_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, png_relative_path });
-        defer self.allocator.free(image_full_path);
 
-        // const sprites_animations_json = "assets/main.json";
+        const cards_png_relative_path = "assets/Cards_v2.png";
+        const cards_png_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, cards_png_relative_path });
+        defer self.allocator.free(cards_png_full_path);
+
+        const solitaire_window_png_relative_path = "assets/Solitaire_window-1.png";
+        const solitaire_window_png_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, solitaire_window_png_relative_path });
+        defer self.allocator.free(solitaire_window_png_full_path);
+
         const sprites_animations_json = "assets/card_sprite.json";
-        const format_sprites = if (builtin.os.tag == .windows) "{s}\\{s}" else "{s}/{s}";
-        const sprites_animations_full_path = try std.fmt.allocPrint(self.allocator, format_sprites, .{ base_folder, sprites_animations_json });
+        const sprites_animations_full_path = try std.fmt.allocPrint(self.allocator, format, .{ base_folder, sprites_animations_json });
         defer self.allocator.free(sprites_animations_full_path);
         self.atlas = try gfx.Atlas.initFromFilePath(allocator, sprites_animations_full_path);
 
         // Load game textures
-        self.default_texture = try gfx.Texture.loadFromFilePath(self.allocator, image_full_path, .{ .format = core.descriptor.format });
+        self.default_texture = try gfx.Texture.loadFromFilePath(self.allocator, cards_png_full_path, .{ .format = core.descriptor.format });
+        self.game_window_texture = try gfx.Texture.loadFromFilePath(self.allocator, solitaire_window_png_full_path,  .{ .format = core.descriptor.format});
+
         self.default_output = try gfx.Texture.createEmpty(self.allocator, settings.design_width, settings.design_height, . { .format = core.descriptor.format});
         self.final_output = try gfx.Texture.createEmpty(self.allocator, settings.design_width, settings.design_height, . { .format = core.descriptor.format});
 
@@ -230,6 +235,17 @@ pub const GameState = struct {
             }),
         );
 
+        const bind_group_game_window = core.device.createBindGroup(
+            &gpu.BindGroup.Descriptor.init(.{
+                .layout = pipeline_layout_default,
+                .entries = &.{
+                    gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
+                    gpu.BindGroup.Entry.textureView(1, self.game_window_texture.view_handle),
+                    gpu.BindGroup.Entry.sampler(2, self.game_window_texture.sampler_handle),
+                },
+            }),
+        );
+
         self.batcher = try gfx.Batcher.init(allocator, 1);
         texture_view.release();
         pipeline_layout_default.release();
@@ -238,6 +254,7 @@ pub const GameState = struct {
         self.vertex_buffer_default = vertex_buffer;
         self.index_buffer_default = index_buffer;
         self.bind_group_default = bind_group;
+        self.bind_group_game_window = bind_group_game_window;
         return self;
     }
 
@@ -249,6 +266,8 @@ pub const GameState = struct {
 
         // Shuffle deck of cards
         try shuffleDeck(self);
+
+
 
         // Deal cards to table
         
@@ -356,11 +375,17 @@ pub const GameState = struct {
         }
     }
 
+    pub fn positionDeck(self: *GameState) !void {
+        _ = self;
+    }
+
     pub fn deinit(self: *GameState) void {
         self.pipeline_default.release();
         self.vertex_buffer_default.release();
         self.index_buffer_default.release();
+
         self.bind_group_default.release();
+        self.bind_group_game_window.release();
 
         self.uniform_buffer_default.release();
         self.uniform_buffer_final.release();

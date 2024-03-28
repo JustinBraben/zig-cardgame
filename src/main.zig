@@ -120,6 +120,7 @@ pub fn update(app: *App) !bool {
         }
     }
 
+    // TODO: Put this block into a systems function
     var view = state.world.view(.{ Components.SpriteRenderer, Components.SpriteAnimator }, .{});
     var entityIter = view.entityIterator();
     while (entityIter.next()) |entity| {
@@ -143,6 +144,7 @@ pub fn update(app: *App) !bool {
         }
     }
 
+    // TODO: Put this block into a systems function
     var cameraView = state.world.view(.{ Components.Camera, Components.Position }, .{});
     var cameraIter = cameraView.entityIterator();
     while (cameraIter.next()) |entity| {
@@ -150,20 +152,30 @@ pub fn update(app: *App) !bool {
         state.camera.position = zmath.f32x4(position.x, position.y, position.z, 0);
     }
 
-    // try state.renderUsingBatch();
-    // try state.renderUsingNewTextureAndCamera();
+    // TODO: Remove eventually
+    // { // Main Render pass
+    //     // try RenderMainPass.run(state);
+    //     try RenderMainPass.runSprite(state);
+    //     // try RenderFinalPass.run(state);
+    // }
 
-    { // Main Render pass
-        // try RenderMainPass.run(state);
+    // var batcher_commands = try state.batcher.finish();
+
+    // core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+    // batcher_commands.release();
+    // core.swap_chain.present();
+
+    if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
+        defer back_buffer_view.release();
+
         try RenderMainPass.runSprite(state);
-        // try RenderFinalPass.run(state);
+
+        var batcher_commands = try state.batcher.finish();
+
+        core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+        batcher_commands.release();
+        core.swap_chain.present();
     }
-
-    var batcher_commands = try state.batcher.finish();
-
-    core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-    batcher_commands.release();
-    core.swap_chain.present();
 
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {
