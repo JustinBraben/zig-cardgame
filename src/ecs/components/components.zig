@@ -45,3 +45,9 @@ pub const SpriteAnimator = sprites.SpriteAnimator;
 
 
 pub const Camera = struct {};
+
+pub const DeckOrder = struct {
+    index: usize = 0,
+};
+
+pub const IsShuffled = struct {};

@@ -66,7 +66,11 @@ pub fn init(app: *App) !void {
     defer allocator.free(base_folder);
     std.debug.print("base folder : {s}\n", .{base_folder});
 
-    state = try GameState.init(allocator);
+    state = try GameState.init(allocator) ;
+
+    state.createSolitaire() catch |err| {
+        std.debug.print("Error creating solitaire: {}\n", .{err});
+    };
 
     // var all_entities = state.world.entities();
     // while (all_entities.next()) |entity| {

@@ -242,54 +242,118 @@ pub const GameState = struct {
     }
 
     /// Create solitaire game
-    pub fn createSolitaire(self: *GameState) void {
+    pub fn createSolitaire(self: *GameState) !void {
 
         // Generate deck of cards
-        generateDeck(self);
+        try generateDeck(self);
 
         // Shuffle deck of cards
+        try shuffleDeck(self);
 
         // Deal cards to table
         
         // Create foundation piles
     }
 
-    pub fn generateDeck(self: *GameState) void {
+    pub fn generateDeck(self: *GameState) !void {
         
         const suits = [_]Components.CardSuit{ 
-            Components.CardSuit.Clubs, 
-            Components.CardSuit.Diamonds, 
-            Components.CardSuit.Hearts, 
-            Components.CardSuit.Spades 
+            Components.CardSuit.Diamonds,
+            Components.CardSuit.Hearts,
+            Components.CardSuit.Clubs,
+            Components.CardSuit.Spades
         };
 
         const values = [_]Components.CardValue{ 
-            Components.CardValue.Ace, 
-            Components.CardValue.Two, 
-            Components.CardValue.Three, 
-            Components.CardValue.Four, 
-            Components.CardValue.Five, 
-            Components.CardValue.Six, 
-            Components.CardValue.Seven, 
-            Components.CardValue.Eight, 
-            Components.CardValue.Nine, 
-            Components.CardValue.Ten, 
-            Components.CardValue.Jack, 
-            Components.CardValue.Queen, 
-            Components.CardValue.King 
+            Components.CardValue.Ace,
+            Components.CardValue.Two,
+            Components.CardValue.Three,
+            Components.CardValue.Four,
+            Components.CardValue.Five,
+            Components.CardValue.Six,
+            Components.CardValue.Seven,
+            Components.CardValue.Eight,
+            Components.CardValue.Nine,
+            Components.CardValue.Ten,
+            Components.CardValue.Jack,
+            Components.CardValue.Queen,
+            Components.CardValue.King
         };
 
+        var index: usize = 0;
         for (suits) |suit| {
             for (values) |value| {
+                if (index >= self.atlas.sprites.len) {
+                    return error.OutOfRange;
+                }
                 const entity = self.world.create();
                 self.world.add(entity, suit);
                 self.world.add(entity, value);
                 self.world.add(entity, Components.SpriteRenderer{
-                    .index = 0,
+                    .index = index,
                 });
+                self.world.add(entity, Components.DeckOrder{
+                    .index = index,
+                });
+                index += 1;
             }
         }
 
+    }
+
+    pub fn shuffleDeck(self: *GameState) !void {
+        // Make a set with 0 - 51
+        // Pick 2 random numbers from the set (which are indexes)
+        // swap the cards at those indexes
+        // Then remove those two values (indexes) from the set
+        // keep going until the set is empty
+        var deck_index_set = std.AutoHashMap(usize, void).init(self.allocator);
+        defer deck_index_set.deinit();
+
+        var deck_index_list = std.ArrayList(usize).init(self.allocator);
+        defer deck_index_list.deinit();
+
+        var deck_index_count: usize = 0;
+        while (deck_index_count < 52) : (deck_index_count += 1) {
+            try deck_index_list.append(deck_index_count);
+        }
+
+        while (deck_index_set.count() < deck_index_list.items.len) {
+            var rnd = std.rand.DefaultPrng.init(
+                blk: {
+                    var seed: u64 = undefined;
+                    try std.os.getrandom(std.mem.asBytes(&seed));
+                    break :blk seed;
+                }
+            );
+            var index_1 = rnd.random().intRangeAtMost(usize, 0, 51);
+            var index_2 = rnd.random().intRangeAtMost(usize, 0, 51);
+
+            while (deck_index_set.contains(index_1) or index_1 == index_2) {
+                index_1 = rnd.random().intRangeAtMost(usize, 0, 51);
+            }
+
+            while (deck_index_set.contains(index_2) or index_1 == index_2) {
+                index_2 = rnd.random().intRangeAtMost(usize, 0, 51);
+            }
+
+            var view_deck_order = self.world.view(.{ Components.DeckOrder }, .{ Components.IsShuffled });
+            var view_deck_entity_iter = view_deck_order.entityIterator();
+            while (view_deck_entity_iter.next()) |entity| {
+                var entity_deck_order = view_deck_order.get(Components.DeckOrder, entity);
+                if (entity_deck_order.index == index_1) {
+                    entity_deck_order.index = index_2;
+                } else if (entity_deck_order.index == index_2) {
+                    entity_deck_order.index = index_1;
+                }
+                self.world.add(entity, Components.IsShuffled{}); // mark as shuffled
+            }
+
+            try deck_index_set.put(index_1, {});
+            try deck_index_set.put(index_2, {});
+
+            log.info("index1: {d}, index2: {d}", .{index_1, index_2});
+        }
     }
 
     pub fn deinit(self: *GameState) void {

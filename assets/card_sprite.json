@@ -64,6 +64,206 @@
             "name": "King_of_Diamonds",
             "source": [528, 320, 44, 64],
             "origin": [0, 0]
+        },
+        {
+            "name": "Ace_of_Hearts",
+            "source": [0, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Two_of_Hearts",
+            "source": [44, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Three_of_Hearts",
+            "source": [88, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Four_of_Hearts",
+            "source": [132, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Five_of_Hearts",
+            "source": [176, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Six_of_Hearts",
+            "source": [220, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Seven_of_Hearts",
+            "source": [264, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Eight_of_Hearts",
+            "source": [308, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Nine_of_Hearts",
+            "source": [352, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Ten_of_Hearts",
+            "source": [396, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Jack_of_Hearts",
+            "source": [440, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Queen_of_Hearts",
+            "source": [484, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "King_of_Hearts",
+            "source": [528, 384, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Ace_of_Clubs",
+            "source": [0, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Two_of_Clubs",
+            "source": [44, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Three_of_Clubs",
+            "source": [88, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Four_of_Clubs",
+            "source": [132, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Five_of_Clubs",
+            "source": [176, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Six_of_Clubs",
+            "source": [220, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Seven_of_Clubs",
+            "source": [264, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Eight_of_Clubs",
+            "source": [308, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Nine_of_Clubs",
+            "source": [352, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Ten_of_Clubs",
+            "source": [396, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Jack_of_Clubs",
+            "source": [440, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Queen_of_Clubs",
+            "source": [484, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "King_of_Clubs",
+            "source": [528, 448, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Ace_of_Spades",
+            "source": [0, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Two_of_Spades",
+            "source": [44, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Three_of_Spades",
+            "source": [88, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Four_of_Spades",
+            "source": [132, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Five_of_Spades",
+            "source": [176, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Six_of_Spades",
+            "source": [220, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Seven_of_Spades",
+            "source": [264, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Eight_of_Spades",
+            "source": [308, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Nine_of_Spades",
+            "source": [352, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Ten_of_Spades",
+            "source": [396, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Jack_of_Spades",
+            "source": [440, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Queen_of_Spades",
+            "source": [484, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "King_of_Spades",
+            "source": [528, 512, 44, 64],
+            "origin": [0, 0]
+        },
+        {
+            "name": "Back_of_Card",
+            "source": [0, 256, 44, 64],
+            "origin": [0, 0]
         }
     ],
     "animations" : [
