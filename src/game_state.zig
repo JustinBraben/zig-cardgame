@@ -80,9 +80,9 @@ pub const GameState = struct {
         self.world.* = Registry.init(allocator);
 
         var index_x: i32 = -10;
-        while (index_x < 10) : (index_x += 2) {
+        while (index_x < 10) : (index_x += 1) {
             var index_y: i32 = -10;
-            while (index_y < 10) : (index_y += 2) {
+            while (index_y < 10) : (index_y += 1) {
                 const entity = self.world.create();
                 const tile = Components.Tile{ .x = index_x, .y = index_y };
                 self.world.add(entity, tile);
@@ -105,23 +105,12 @@ pub const GameState = struct {
             // self.world.add(entity, Components.SpriteRenderer{
             //     .index = 0,
             // });
+            // self.world.add(entity, Components.SpriteAnimator{
+            //     .animation = &animations,
+            //     .state = .play,
+            //     .fps = 3,
+            // });
         }
-
-        // const entity = self.world.create();
-        // const tile = Components.Tile{ .x = -10, .y = -15 };
-        // self.world.add(entity, tile);
-        // self.world.add(entity, Components.Position{ .x = 0.0, .y = 0.0, .z = 0.0});
-        // self.world.add(entity, Components.CardValue.Seven);
-        // self.world.add(entity, Components.CardSuit.Diamonds);
-        // self.world.add(entity, Components.SpriteRenderer{
-        //     .index = 0,
-        // });
-        // self.world.add(entity, Components.SpriteAnimator{
-        //     .animation = &animations,
-        //     .state = .play,
-        //     .fps = 2,
-        // });
-        // self.world.add(entity, Components.Camera{});
 
         const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
         defer shader_module.release();

@@ -29,6 +29,12 @@ pub const zoom_scroll_tolerance: f32 = 0.2;
 /// The number of pixels per tile in width and height.
 pub const pixels_per_unit: f32 = 32.0;
 
+/// The number of pixels per tile in width for cards
+pub const pixels_per_unit_x: f32 = 44.0;
+
+/// The number of pixels per tile in height for cards
+pub const pixels_per_unit_y: f32 = 64.0;
+
 /// The seconds it takes for a move to be completed from one tile to another.
 // TODO: Embed this in character stats.
 pub const movement_cooldown: f32 = 0.38;

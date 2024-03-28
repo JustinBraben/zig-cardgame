@@ -49,8 +49,8 @@ pub fn runSprite(gamestate: *GameState) !void {
         // const tile_pos = utils.tileToPixelCoords(tile);
         // const position = utils.toF32x4(tile_pos);
         const position = zmath.f32x4(
-            @as(f32, @floatFromInt(tile.x)) * 32, 
-            @as(f32, @floatFromInt(tile.y)) * 32, 
+            @as(f32, @floatFromInt(tile.x)) * game.settings.pixels_per_unit_x,
+            @as(f32, @floatFromInt(tile.y)) * game.settings.pixels_per_unit_y,
             @as(f32, @floatFromInt(tile.z)) * 32, 
             0
         );
