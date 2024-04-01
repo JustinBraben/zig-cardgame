@@ -168,12 +168,12 @@ pub fn update(app: *App) !bool {
     if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
         defer back_buffer_view.release();
 
-        try RenderMainPass.runSprite(state);
+        try RenderMainPass.run(state);
 
-        var batcher_commands = try state.batcher.finish();
+        const batcher_commands = try state.batcher.finish();
+        defer batcher_commands.release();
 
         core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-        batcher_commands.release();
         core.swap_chain.present();
     }
 

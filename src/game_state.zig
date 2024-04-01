@@ -54,6 +54,7 @@ pub const GameState = struct {
     world: *Registry = undefined,
     camera: gfx.Camera = undefined,
     pipeline_default: *gpu.RenderPipeline = undefined,
+    pipeline_game_window: *gpu.RenderPipeline = undefined,
     vertex_buffer_default: *gpu.Buffer = undefined,
     index_buffer_default: *gpu.Buffer = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
@@ -64,6 +65,7 @@ pub const GameState = struct {
     default_texture: gfx.Texture = undefined,
     game_window_texture: gfx.Texture = undefined,
     default_output: gfx.Texture = undefined,
+    game_window_output: gfx.Texture = undefined,
     final_output: gfx.Texture = undefined,
     atlas: gfx.Atlas = undefined,
     mouse: input.Mouse = undefined,
@@ -114,7 +116,9 @@ pub const GameState = struct {
             // });
         }
 
-        const shader_module = core.device.createShaderModuleWGSL("default-window.wgsl", shaders.default_window);
+        const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
+        const shader_module_game_window = core.device.createShaderModuleWGSL("game-window.wgsl", shaders.game_window);
+        defer shader_module_game_window.release();
         defer shader_module.release();
 
         const vertex_attributes = [_]gpu.VertexAttribute{
@@ -154,8 +158,20 @@ pub const GameState = struct {
             .targets = &.{color_target},
         });
 
+        const game_window_fragment = gpu.FragmentState.init(.{
+            .module = shader_module_game_window,
+            .entry_point = "frag_main",
+            .targets = &.{color_target},
+        });
+
         const default_vertex = gpu.VertexState.init(.{
             .module = shader_module,
+            .entry_point = "vert_main",
+            .buffers = &.{vertex_buffer_layout},
+        });
+
+        const game_window_vertex = gpu.VertexState.init(.{
+            .module = shader_module_game_window,
             .entry_point = "vert_main",
             .buffers = &.{vertex_buffer_layout},
         });
@@ -165,7 +181,15 @@ pub const GameState = struct {
             .vertex = default_vertex,
             // .primitive = .{ .cull_mode = .back },
         };
+
+        const pipeline_descriptor_game_window = gpu.RenderPipeline.Descriptor{
+            .fragment = &game_window_fragment,
+            .vertex = game_window_vertex,
+            // .primitive = .{ .cull_mode = .back },
+        };
+
         const pipeline = core.device.createRenderPipeline(&pipeline_descriptor);
+        const pipeline_game_window = core.device.createRenderPipeline(&pipeline_descriptor_game_window);
 
         const vertex_buffer = core.device.createBuffer(&.{
             .usage = .{ .vertex = true },
@@ -207,9 +231,8 @@ pub const GameState = struct {
         self.game_window_texture = try gfx.Texture.loadFromFilePath(self.allocator, solitaire_window_png_full_path,  .{ .format = core.descriptor.format});
 
         self.default_output = try gfx.Texture.createEmpty(self.allocator, settings.design_width, settings.design_height, . { .format = core.descriptor.format});
+        self.game_window_output = try gfx.Texture.createEmpty(self.allocator, settings.design_width, settings.design_height, . { .format = core.descriptor.format});
         self.final_output = try gfx.Texture.createEmpty(self.allocator, settings.design_width, settings.design_height, . { .format = core.descriptor.format});
-
-        const texture_view = self.default_texture.handle.createView(&gpu.TextureView.Descriptor{});
 
         self.uniform_buffer_default = core.device.createBuffer(&.{
             .usage = .{ .copy_dst = true, .uniform = true },
@@ -224,6 +247,8 @@ pub const GameState = struct {
         });
 
         const pipeline_layout_default = pipeline.getBindGroupLayout(0);
+        const pipeline_layout_game_window = pipeline_game_window.getBindGroupLayout(0);
+
         const bind_group = core.device.createBindGroup(
             &gpu.BindGroup.Descriptor.init(.{
                 .layout = pipeline_layout_default,
@@ -231,32 +256,31 @@ pub const GameState = struct {
                     gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
                     gpu.BindGroup.Entry.textureView(1, self.default_texture.view_handle),
                     gpu.BindGroup.Entry.sampler(2, self.default_texture.sampler_handle),
-                    gpu.BindGroup.Entry.textureView(3, self.game_window_texture.view_handle),
-                    gpu.BindGroup.Entry.sampler(4, self.game_window_texture.sampler_handle),
                 },
             }),
         );
 
-        // const bind_group_game_window = core.device.createBindGroup(
-        //     &gpu.BindGroup.Descriptor.init(.{
-        //         .layout = pipeline_layout_default,
-        //         .entries = &.{
-        //             gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
-        //             gpu.BindGroup.Entry.textureView(1, self.game_window_texture.view_handle),
-        //             gpu.BindGroup.Entry.sampler(2, self.game_window_texture.sampler_handle),
-        //         },
-        //     }),
-        // );
+        const bind_group_game_window = core.device.createBindGroup(
+            &gpu.BindGroup.Descriptor.init(.{
+                .layout = pipeline_layout_game_window,
+                .entries = &.{
+                    gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
+                    gpu.BindGroup.Entry.textureView(1, self.game_window_texture.view_handle),
+                    gpu.BindGroup.Entry.sampler(2, self.game_window_texture.sampler_handle),
+                },
+            }),
+        );
 
         self.batcher = try gfx.Batcher.init(allocator, 1);
-        texture_view.release();
         pipeline_layout_default.release();
+        pipeline_layout_game_window.release();
 
         self.pipeline_default = pipeline;
+        self.pipeline_game_window = pipeline_game_window;
         self.vertex_buffer_default = vertex_buffer;
         self.index_buffer_default = index_buffer;
         self.bind_group_default = bind_group;
-        // self.bind_group_game_window = bind_group_game_window;
+        self.bind_group_game_window = bind_group_game_window;
         return self;
     }
 
@@ -387,7 +411,7 @@ pub const GameState = struct {
         self.index_buffer_default.release();
 
         self.bind_group_default.release();
-        // self.bind_group_game_window.release();
+        self.bind_group_game_window.release();
 
         self.uniform_buffer_default.release();
         self.uniform_buffer_final.release();
@@ -395,6 +419,7 @@ pub const GameState = struct {
         self.default_texture.deinit();
 
         self.default_output.deinit();
+        self.game_window_output.deinit();
         self.final_output.deinit();
 
         self.allocator.free(self.atlas.sprites);
