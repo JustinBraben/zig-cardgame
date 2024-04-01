@@ -26,20 +26,6 @@ pub const Camera = struct {
 
     /// Use this matrix when drawing to the framebuffer.
     pub fn frameBufferMatrix(camera: Camera) zmath.Mat {
-        // const fb_ortho = zmath.orthographicRh(
-        //     game.window_size[0],
-        //     game.window_size[1],
-        //     0.1,
-        //     1000,
-        // );
-        // const view = zmath.lookAtRh(
-        //     zmath.Vec{ 0, 1000, 0, 1 },
-        //     zmath.Vec{ 0, 0, 0, 1 },
-        //     zmath.Vec{ 0, 0, 1, 0 },
-        // );
-        // const fb_scaling = zmath.scaling(camera.zoom, camera.zoom, 1);
-        // _ = fb_scaling;
-        // return zmath.mul(view, fb_ortho);
         const fb_ortho = zmath.orthographicLh(game.window_size[0], game.window_size[1], -100, 100);
         const fb_scaling = zmath.scaling(camera.zoom, camera.zoom, 1);
         const fb_translation = zmath.translation(-game.settings.design_size[0] / 2 * camera.zoom, -game.settings.design_size[1] / 2 * camera.zoom, 1);

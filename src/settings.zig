@@ -9,10 +9,10 @@ pub var window_width: u32 = 1280;
 pub var window_height: u32 = 768;
 
 /// The design texture width for render-textures.
-pub const design_width: u32 = 1440;
+pub const design_width: u32 = 1280;
 
 /// The design texture height for render-textures.
-pub const design_height: u32 = 1440;
+pub const design_height: u32 = 768;
 
 /// The design texture size for render-textures as an f32x4.
 pub const design_size = zmath.f32x4(@floatFromInt(design_width), @floatFromInt(design_height), 0, 0);

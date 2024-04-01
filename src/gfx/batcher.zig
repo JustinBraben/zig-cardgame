@@ -438,16 +438,38 @@ pub const Batcher = struct {
             defer back_buffer_view.release();
 
             const color_attachments = [_]core.gpu.RenderPassColorAttachment{.{
-                .view = back_buffer_view,
+                .view = if (self.context.output_handle) |out_handle| out_handle else back_buffer_view,
                 .load_op = .clear,
-                .clear_value = self.context.clear_color,
                 .store_op = .store,
+                .clear_value = self.context.clear_color,
             }};
 
             const render_pass_info = core.gpu.RenderPassDescriptor{
                 .color_attachment_count = color_attachments.len,
                 .color_attachments = &color_attachments,
             };
+
+            // encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
+
+            // const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
+            // defer {
+            //     batcherRenderPass.end();
+            //     batcherRenderPass.release();
+            // }
+
+            // batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
+            // batcherRenderPass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
+
+            // batcherRenderPass.setPipeline(self.context.pipeline_handle);
+
+            // if (uniforms_fields_info.len > 0) {
+            //     batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
+            // } else {
+            //     batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, null);
+            // }
+
+            // // Draw only the quads appended this cycle
+            // batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, @as(u32, @intCast(self.start_count * 6)), 0, 0);
 
             encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
 

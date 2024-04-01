@@ -96,11 +96,21 @@ pub fn update(app: *App) !bool {
     var iter = core.pollEvents();
     while (iter.next()) |event| {
         switch (event) {
+            .key_press => |key_press| {
+                state.hotkeys.setHotkeyState(key_press.key, key_press.mods, .press);
+            },
+            .key_repeat => |key_repeat| {
+                state.hotkeys.setHotkeyState(key_repeat.key, key_repeat.mods, .repeat);
+            },
+            .key_release => |key_release| {
+                state.hotkeys.setHotkeyState(key_release.key, key_release.mods, .release);
+            },
             .mouse_motion => |mouse_motion| {
                 state.mouse.position = .{ @floatCast(mouse_motion.pos.x), @floatCast(mouse_motion.pos.y) };
             },
             .mouse_press => |mouse_press| {
                 state.mouse.setButtonState(mouse_press.button, mouse_press.mods, .press);
+                std.debug.print("Current Camera position, x : {}, y: {}\n", .{state.camera.position[0], state.camera.position[1]});
             },
             .close => return true,
             .framebuffer_resize => |size| {
@@ -118,6 +128,24 @@ pub fn update(app: *App) !bool {
             },
             else => {},
         }
+    }
+
+    const n: bool = if (state.hotkeys.hotkey(.directional_up)) |hk| hk.down() else false;
+    const s: bool = if (state.hotkeys.hotkey(.directional_down)) |hk| hk.down() else false;
+    const e: bool = if (state.hotkeys.hotkey(.directional_right)) |hk| hk.down() else false;
+    const w: bool = if (state.hotkeys.hotkey(.directional_left)) |hk| hk.down() else false;
+
+    if (n) {
+        state.camera.position[1] += 1.0;
+    }
+    if (s) {
+        state.camera.position[1] -= 1.0;
+    }
+    if (e) {
+        state.camera.position[0] += 1.0;
+    }
+    if (w) {
+        state.camera.position[0] -= 1.0;
     }
 
     // TODO: Put this block into a systems function
@@ -159,23 +187,25 @@ pub fn update(app: *App) !bool {
     //     // try RenderFinalPass.run(state);
     // }
 
-    // var batcher_commands = try state.batcher.finish();
+    try RenderMainPass.run(state);
 
-    // core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-    // batcher_commands.release();
-    // core.swap_chain.present();
+    const batcher_commands = try state.batcher.finish();
+    defer batcher_commands.release();
 
-    if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
-        defer back_buffer_view.release();
+    core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+    core.swap_chain.present();
 
-        try RenderMainPass.run(state);
+    // if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
+    //     defer back_buffer_view.release();
 
-        const batcher_commands = try state.batcher.finish();
-        defer batcher_commands.release();
+    //     try RenderMainPass.run(state);
 
-        core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-        core.swap_chain.present();
-    }
+    //     const batcher_commands = try state.batcher.finish();
+    //     defer batcher_commands.release();
+
+    //     core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
+    //     core.swap_chain.present();
+    // }
 
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {

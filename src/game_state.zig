@@ -69,6 +69,7 @@ pub const GameState = struct {
     final_output: gfx.Texture = undefined,
     atlas: gfx.Atlas = undefined,
     mouse: input.Mouse = undefined,
+    hotkeys: input.Hotkeys = undefined,
 
     // asset_manager: *AssetManager = undefined,
 
@@ -78,8 +79,10 @@ pub const GameState = struct {
         self.world = try allocator.create(Registry);
 
         self.mouse = try input.Mouse.initDefault(allocator);
+        self.hotkeys = try input.Hotkeys.initDefault(allocator);
 
         self.camera = gfx.Camera.init(zmath.f32x4s(0));
+        self.camera.zoom = 1.0;
 
         self.world.* = Registry.init(allocator);
 
@@ -426,6 +429,8 @@ pub const GameState = struct {
         self.allocator.free(self.atlas.animations);
         
         self.allocator.free(self.mouse.buttons);
+        self.allocator.free(self.hotkeys.hotkeys);
+
         self.batcher.deinit();
         self.world.deinit();
         self.allocator.destroy(self);
