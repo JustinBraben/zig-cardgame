@@ -38,7 +38,7 @@ pub fn runSprite(gamestate: *GameState) !void {
 
     try gamestate.batcher.begin(.{
         .pipeline_handle = gamestate.pipeline_default,
-        .bind_group_handle = gamestate.bind_group_game_window,
+        .bind_group_handle = gamestate.bind_group_default,
         .output_handle = gamestate.default_output.view_handle,
     });
 

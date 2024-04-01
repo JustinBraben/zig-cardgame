@@ -114,7 +114,7 @@ pub const GameState = struct {
             // });
         }
 
-        const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
+        const shader_module = core.device.createShaderModuleWGSL("default-window.wgsl", shaders.default_window);
         defer shader_module.release();
 
         const vertex_attributes = [_]gpu.VertexAttribute{
@@ -231,20 +231,22 @@ pub const GameState = struct {
                     gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
                     gpu.BindGroup.Entry.textureView(1, self.default_texture.view_handle),
                     gpu.BindGroup.Entry.sampler(2, self.default_texture.sampler_handle),
+                    gpu.BindGroup.Entry.textureView(3, self.game_window_texture.view_handle),
+                    gpu.BindGroup.Entry.sampler(4, self.game_window_texture.sampler_handle),
                 },
             }),
         );
 
-        const bind_group_game_window = core.device.createBindGroup(
-            &gpu.BindGroup.Descriptor.init(.{
-                .layout = pipeline_layout_default,
-                .entries = &.{
-                    gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
-                    gpu.BindGroup.Entry.textureView(1, self.game_window_texture.view_handle),
-                    gpu.BindGroup.Entry.sampler(2, self.game_window_texture.sampler_handle),
-                },
-            }),
-        );
+        // const bind_group_game_window = core.device.createBindGroup(
+        //     &gpu.BindGroup.Descriptor.init(.{
+        //         .layout = pipeline_layout_default,
+        //         .entries = &.{
+        //             gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
+        //             gpu.BindGroup.Entry.textureView(1, self.game_window_texture.view_handle),
+        //             gpu.BindGroup.Entry.sampler(2, self.game_window_texture.sampler_handle),
+        //         },
+        //     }),
+        // );
 
         self.batcher = try gfx.Batcher.init(allocator, 1);
         texture_view.release();
@@ -254,7 +256,7 @@ pub const GameState = struct {
         self.vertex_buffer_default = vertex_buffer;
         self.index_buffer_default = index_buffer;
         self.bind_group_default = bind_group;
-        self.bind_group_game_window = bind_group_game_window;
+        // self.bind_group_game_window = bind_group_game_window;
         return self;
     }
 
@@ -385,7 +387,7 @@ pub const GameState = struct {
         self.index_buffer_default.release();
 
         self.bind_group_default.release();
-        self.bind_group_game_window.release();
+        // self.bind_group_game_window.release();
 
         self.uniform_buffer_default.release();
         self.uniform_buffer_final.release();
