@@ -19,8 +19,16 @@ pub fn run(gamestate: *GameState) !void {
     });
     // Draw the playing table texture
     // const pos = zmath.f32x4(-640, -320, 100, 0);
-    const pos = gamestate.camera.worldToScreen(zmath.f32x4(-640.0, 384.0, 0, 0));
-    gamestate.batcher.texture(pos, &gamestate.game_window_texture, .{ }) catch unreachable;
+    const pos = gamestate.camera.worldToScreen(
+        zmath.f32x4(
+            -1.0 * (@as(f32, @floatFromInt(game.settings.design_width)) / 2.0),
+            (@as(f32, @floatFromInt(game.settings.design_height)) / 2.0),
+            0,
+            0
+            )
+        );
+    gamestate.batcher.texture(pos, &gamestate.game_window_texture, .{}) catch unreachable;
+    // gamestate.batcher.texture(pos, &gamestate.default_texture, .{}) catch unreachable;
     try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
 
     // Render the sprites
