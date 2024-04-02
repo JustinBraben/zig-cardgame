@@ -70,7 +70,7 @@ pub fn init(app: *App) !void {
     state = try GameState.init(allocator);
 
     // std.debug.print("default output before renderSprites : {any}\n", .{state.default_output.image.pixels});
-    try RenderMainPass.renderSprites(state);
+    // try RenderMainPass.renderSprites(state);
     // std.debug.print("default output after renderSprites : {any}\n", .{state.default_output.image.pixels});
 
     state.createSolitaire() catch |err| {
@@ -190,9 +190,9 @@ pub fn update(app: *App) !bool {
     // try MovementSnapSystem.run(state);
     // try MovementAutoSystem.run(state);
 
-    // try RenderMainPass.renderTable(state);
+    try RenderMainPass.renderTable(state);
     // try RenderMainPass.run(state);
-    try RenderMainPass.renderSprites(state);
+    // try RenderMainPass.renderSprites(state);
 
     const batcher_commands = try state.batcher.finish();
     defer batcher_commands.release();

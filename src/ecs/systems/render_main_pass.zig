@@ -106,10 +106,13 @@ pub fn renderSprites(gamestate: *GameState) !void {
                 &gamestate.default_texture,
                 gamestate.atlas.sprites[renderer.index],
                 .{
+                    .color = renderer.color,
+                    .vert_mode = renderer.vert_mode,
+                    .frag_mode = renderer.frag_mode,
                     .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
-                    .rotation = 0.0,
                     .flip_x = false,
                     .flip_y = false,
+                    .rotation = 0.0,
                 },
             );
         }
