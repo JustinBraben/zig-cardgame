@@ -86,10 +86,10 @@ pub const GameState = struct {
 
         self.world.* = Registry.init(allocator);
 
-        var index_x: i32 = -10;
-        while (index_x < 10) : (index_x += 1) {
-            var index_y: i32 = -10;
-            while (index_y < 10) : (index_y += 1) {
+        var index_x: i32 = 0;
+        while (index_x < 20) : (index_x += 1) {
+            var index_y: i32 = 0;
+            while (index_y < 20) : (index_y += 1) {
                 const entity = self.world.create();
                 const tile = Components.Tile{ .x = index_x, .y = index_y };
                 self.world.add(entity, tile);

@@ -423,7 +423,7 @@ pub const Batcher = struct {
         if (uniforms_type_info != .Struct) {
             @compileError("Expected tuple or struct argument, found " ++ @typeName(UniformsType));
         }
-        // const uniforms_fields_info = uniforms_type_info.Struct.fields;
+        const uniforms_fields_info = uniforms_type_info.Struct.fields;
 
         if (self.state == .idle) return error.EndCalledTwice;
         self.state = .idle;
@@ -449,40 +449,45 @@ pub const Batcher = struct {
                 .color_attachments = &color_attachments,
             };
 
+            encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
+
+            const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
+            defer {
+                batcherRenderPass.end();
+                batcherRenderPass.release();
+            }
+
+            batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
+            batcherRenderPass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
+
+            batcherRenderPass.setPipeline(self.context.pipeline_handle);
+
+            if (uniforms_fields_info.len > 0) {
+                batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
+            } else {
+                batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, null);
+            }
+
+            // Draw only the quads appended this cycle
+            batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, @as(u32, @intCast(self.start_count * 6)), 0, 0);
+
             // encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
 
             // const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
+
             // defer {
             //     batcherRenderPass.end();
             //     batcherRenderPass.release();
             // }
 
+            // batcherRenderPass.setPipeline(self.context.pipeline_handle);
             // batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
             // batcherRenderPass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
-
-            // batcherRenderPass.setPipeline(self.context.pipeline_handle);
-
-            // if (uniforms_fields_info.len > 0) {
-            //     batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
-            // } else {
-            //     batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, null);
-            // }
-
+            // batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
             // // Draw only the quads appended this cycle
-            // batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, @as(u32, @intCast(self.start_count * 6)), 0, 0);
-
-            encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
-
-            const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
-
-            batcherRenderPass.setPipeline(self.context.pipeline_handle);
-            batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
-            batcherRenderPass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
-            batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
-            // Draw only the quads appended this cycle
-            batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, 0, 0, 0);
-            batcherRenderPass.end();
-            batcherRenderPass.release();
+            // batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, 0, 0, 0);
+            // // batcherRenderPass.end();
+            // // batcherRenderPass.release();
         }
     }
 

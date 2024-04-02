@@ -185,7 +185,8 @@ pub fn update(app: *App) !bool {
     // try MovementSnapSystem.run(state);
     // try MovementAutoSystem.run(state);
 
-    try RenderMainPass.renderTable(state);
+    // try RenderMainPass.renderTable(state);
+    try RenderMainPass.run(state);
 
     const batcher_commands = try state.batcher.finish();
     defer batcher_commands.release();
