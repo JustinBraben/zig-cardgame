@@ -180,20 +180,23 @@ pub fn update(app: *App) !bool {
         state.camera.position = zmath.f32x4(position.x, position.y, position.z, 0);
     }
 
-    // TODO: Remove eventually
-    // { // Main Render pass
-    //     // try RenderMainPass.run(state);
-    //     try RenderMainPass.runSprite(state);
-    //     // try RenderFinalPass.run(state);
-    // }
+    // TODO: have systems work like this
+    // try MovementDragSystem.run(state);
+    // try MovementSnapSystem.run(state);
+    // try MovementAutoSystem.run(state);
 
-    try RenderMainPass.run(state);
+    try RenderMainPass.renderTable(state);
 
     const batcher_commands = try state.batcher.finish();
     defer batcher_commands.release();
 
     core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
     core.swap_chain.present();
+
+    // TODO: Have the rendering work like this
+    // try RenderBackground.run(state);         // Render the background
+    // try RenderPileOutlines.run(state);       // Render the outlines of the piles
+    // try RenderCards.run(state);              // Render the cards
 
     // if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
     //     defer back_buffer_view.release();

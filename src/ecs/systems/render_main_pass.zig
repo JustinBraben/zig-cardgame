@@ -27,11 +27,10 @@ pub fn run(gamestate: *GameState) !void {
             0
             )
         );
-    gamestate.batcher.texture(pos, &gamestate.game_window_texture, .{}) catch unreachable;
-    // gamestate.batcher.texture(pos, &gamestate.default_texture, .{}) catch unreachable;
+    try gamestate.batcher.texture(pos, &gamestate.game_window_texture, .{});
     try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
 
-    // Render the sprites
+    // // Render the sprites
     // try gamestate.batcher.begin(.{
     //     .pipeline_handle = gamestate.pipeline_default,
     //     .bind_group_handle = gamestate.bind_group_default,
@@ -119,18 +118,40 @@ pub fn renderSprites(gamestate: *GameState) !void {
 }
 
 pub fn renderTable(gamestate: *GameState) !void {
-    const uniforms = gfx.UniformBufferObject{
-        .mvp = zmath.transpose(gamestate.camera.renderTextureMatrix()),
+
+    const mvp = zmath.transpose(gamestate.camera.renderTextureMatrix());
+
+    var uniforms = gfx.UniformBufferObject{
+        .mvp = mvp,
     };
 
     // Render the playing table
     try gamestate.batcher.begin(.{
         .pipeline_handle = gamestate.pipeline_game_window,
         .bind_group_handle = gamestate.bind_group_game_window,
-        .output_handle = gamestate.default_output.view_handle,
+        .output_handle = gamestate.game_window_output.view_handle,
     });
     // Draw the playing table texture
-    const pos = zmath.f32x4(-640, -320, 100, 0);
-    gamestate.batcher.texture(pos, &gamestate.game_window_texture, .{}) catch unreachable;
+    const position = zmath.f32x4s(0);
+    // const position = zmath.f32x4(
+    //     (@as(f32, @floatFromInt(game.settings.design_width))),
+    //     (@as(f32, @floatFromInt(game.settings.design_height))), 
+    //     -100, 
+    //     100
+    // );
+    gamestate.batcher.texture(position, &gamestate.game_window_texture, .{}) catch unreachable;
+    try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
+
+    uniforms = gfx.UniformBufferObject{ 
+        .mvp = zmath.transpose(gamestate.camera.frameBufferMatrix()),
+    };
+    // const pos = gamestate.camera.worldToScreen(
+    //     position
+    // );
+    try gamestate.batcher.begin(.{
+        .pipeline_handle = gamestate.pipeline_game_window,
+        .bind_group_handle = gamestate.bind_group_game_window,
+    });
+    try gamestate.batcher.texture(zmath.f32x4s(0), &gamestate.game_window_output, .{});
     try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
 }
