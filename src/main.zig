@@ -1,5 +1,6 @@
 const std = @import("std");
 const log = std.log.scoped(.main);
+const assert = std.debug.assert;
 const core = @import("mach").core;
 const gpu = core.gpu;
 const zigimg = @import("zigimg");
@@ -66,7 +67,11 @@ pub fn init(app: *App) !void {
     defer allocator.free(base_folder);
     std.debug.print("base folder : {s}\n", .{base_folder});
 
-    state = try GameState.init(allocator) ;
+    state = try GameState.init(allocator);
+
+    // std.debug.print("default output before renderSprites : {any}\n", .{state.default_output.image.pixels});
+    try RenderMainPass.renderSprites(state);
+    // std.debug.print("default output after renderSprites : {any}\n", .{state.default_output.image.pixels});
 
     state.createSolitaire() catch |err| {
         std.debug.print("Error creating solitaire: {}\n", .{err});
@@ -186,7 +191,8 @@ pub fn update(app: *App) !bool {
     // try MovementAutoSystem.run(state);
 
     // try RenderMainPass.renderTable(state);
-    try RenderMainPass.run(state);
+    // try RenderMainPass.run(state);
+    try RenderMainPass.renderSprites(state);
 
     const batcher_commands = try state.batcher.finish();
     defer batcher_commands.release();
@@ -210,6 +216,16 @@ pub fn update(app: *App) !bool {
     //     core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
     //     core.swap_chain.present();
     // }
+
+    for (state.hotkeys.hotkeys) |*hk| {
+        hk.previous_state = hk.state;
+    }
+
+    for (state.mouse.buttons) |*button| {
+        button.previous_state = button.state;
+    }
+
+    state.mouse.previous_position = state.mouse.position;
 
     // update the window title every second
     if (app.title_timer.read() >= 1.0) {

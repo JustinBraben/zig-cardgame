@@ -470,24 +470,6 @@ pub const Batcher = struct {
 
             // Draw only the quads appended this cycle
             batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, @as(u32, @intCast(self.start_count * 6)), 0, 0);
-
-            // encoder.writeBuffer(buffer, 0, &[_]UniformsType{uniforms});
-
-            // const batcherRenderPass = encoder.beginRenderPass(&render_pass_info);
-
-            // defer {
-            //     batcherRenderPass.end();
-            //     batcherRenderPass.release();
-            // }
-
-            // batcherRenderPass.setPipeline(self.context.pipeline_handle);
-            // batcherRenderPass.setVertexBuffer(0, self.vertex_buffer_handle, 0, self.vertex_buffer_handle.getSize());
-            // batcherRenderPass.setIndexBuffer(self.index_buffer_handle, .uint32, 0, self.index_buffer_handle.getSize());
-            // batcherRenderPass.setBindGroup(0, self.context.bind_group_handle, &.{});
-            // // Draw only the quads appended this cycle
-            // batcherRenderPass.drawIndexed(@as(u32, @intCast(quad_count * 6)), 1, 0, 0, 0);
-            // // batcherRenderPass.end();
-            // // batcherRenderPass.release();
         }
     }
 
