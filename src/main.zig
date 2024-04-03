@@ -153,6 +153,13 @@ pub fn update(app: *App) !bool {
         state.camera.position[0] -= 1.0;
     }
 
+    const start_new_game: bool = if (state.hotkeys.hotkey(.new_game)) |hk| hk.released() else false;
+    if (start_new_game) {
+        state.createSolitaire() catch |err| {
+            std.debug.print("Error creating solitaire: {}\n", .{err});
+        };
+    }
+
     // TODO: Put this block into a systems function
     var view = state.world.view(.{ Components.SpriteRenderer, Components.SpriteAnimator }, .{});
     var entityIter = view.entityIterator();

@@ -308,6 +308,9 @@ pub const GameState = struct {
     /// Create solitaire game
     pub fn createSolitaire(self: *GameState) !void {
 
+        // Clear deck of cards
+        clearDeck(self);
+
         // Generate deck of cards
         try generateDeck(self);
 
@@ -320,6 +323,23 @@ pub const GameState = struct {
         // Deal cards to table
         
         // Create foundation piles
+    }
+
+    pub fn clearDeck(self: *GameState) void {
+        var view_deck = self.world.view(
+            .{ 
+                Components.CardSuit, 
+                Components.CardValue, 
+                Components.DeckOrder, 
+                Components.SpriteRenderer,
+                Components.Tile,
+                Components.IsShuffled,
+                }, 
+            .{});
+        var view_deck_entity_iter = view_deck.entityIterator();
+        while (view_deck_entity_iter.next()) |entity| {
+            self.world.removeAll(entity);
+        }
     }
 
     pub fn generateDeck(self: *GameState) !void {
@@ -354,15 +374,15 @@ pub const GameState = struct {
                     return error.OutOfRange;
                 }
                 const entity = self.world.create();
-                self.world.add(entity, suit);
-                self.world.add(entity, value);
-                self.world.add(entity, Components.SpriteRenderer{
+                self.world.addOrReplace(entity, suit);
+                self.world.addOrReplace(entity, value);
+                self.world.addOrReplace(entity, Components.SpriteRenderer{
                     .index = index,
                 });
-                self.world.add(entity, Components.DeckOrder{
+                self.world.addOrReplace(entity, Components.DeckOrder{
                     .index = index,
                 });
-                self.world.add(entity, Components.Tile{});
+                self.world.addOrReplace(entity, Components.Tile{});
                 // log.info("Creating {} of {} at deck order {}", .{value, suit, index});
                 index += 1;
             }

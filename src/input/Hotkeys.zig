@@ -21,6 +21,7 @@ pub const Action = enum(u32) {
     directional_left,
     scanner,
     inspect,
+    new_game,
 };
 
 hotkeys: []Hotkey,
@@ -142,6 +143,12 @@ pub fn initDefault(allocator: std.mem.Allocator) !Self {
             .shortcut = "d",
             .key = Key.d,
             .action = .directional_right,
+        });
+
+        try hotkeys.append(.{
+            .shortcut = "r",
+            .key = Key.r,
+            .action = .new_game
         });
 
         try hotkeys.append(.{
