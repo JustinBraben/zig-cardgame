@@ -314,7 +314,8 @@ pub const GameState = struct {
         // Shuffle deck of cards
         try shuffleDeck(self);
 
-
+        // Position deck of cards
+        positionDeck(self);
 
         // Deal cards to table
         
@@ -361,6 +362,7 @@ pub const GameState = struct {
                 self.world.add(entity, Components.DeckOrder{
                     .index = index,
                 });
+                // log.info("Creating {} of {} at deck order {}", .{value, suit, index});
                 index += 1;
             }
         }
@@ -409,10 +411,13 @@ pub const GameState = struct {
                 var entity_deck_order = view_deck_order.get(Components.DeckOrder, entity);
                 if (entity_deck_order.index == index_1) {
                     entity_deck_order.index = index_2;
+                    self.world.add(entity, Components.IsShuffled{}); // mark as shuffled
+                    // log.info("successful shuffle", .{});
                 } else if (entity_deck_order.index == index_2) {
                     entity_deck_order.index = index_1;
+                    self.world.add(entity, Components.IsShuffled{}); // mark as shuffled
+                    // log.info("successful shuffle", .{});
                 }
-                self.world.add(entity, Components.IsShuffled{}); // mark as shuffled
             }
 
             try deck_index_set.put(index_1, {});
@@ -422,8 +427,29 @@ pub const GameState = struct {
         }
     }
 
-    pub fn positionDeck(self: *GameState) !void {
-        _ = self;
+    pub fn positionDeck(self: *GameState) void {
+        var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue }, .{}, .{});
+
+        const SortDeckOrder = struct {
+            fn sort(_: void, a: Components.DeckOrder, b: Components.DeckOrder) bool {
+                return a.index < b.index;
+            }
+        };
+
+        // var group_iter = deck_order_group.iterator(struct { deck_order: *Components.DeckOrder, card_suit: *Components.CardSuit, card_value: *Components.CardValue});
+        // std.debug.print("Before sort\n", .{});
+        // while (group_iter.next()) |entity| {
+        //     std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
+        //     // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
+        // }
+
+        deck_order_group.sort(Components.DeckOrder, {}, SortDeckOrder.sort);
+        var group_iter_sorted = deck_order_group.iterator(struct { deck_order: *Components.DeckOrder, card_suit: *Components.CardSuit, card_value: *Components.CardValue});
+        std.debug.print("After sort\n", .{});
+        while (group_iter_sorted.next()) |entity| {
+            std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
+            // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
+        }
     }
 
     pub fn deinit(self: *GameState) void {
