@@ -87,14 +87,8 @@ pub fn renderSprites(gamestate: *GameState) !void {
         var iter = view.entityIterator();
         while (iter.next()) |entity| {
             const tile = view.getConst(Components.Tile, entity);
-            // const tile_pos = utils.tileToPixelCoords(tile);
-            // const position = utils.toF32x4(tile_pos);
-            const position = zmath.f32x4(
-                (@as(f32, @floatFromInt(tile.x)) * game.settings.pixels_per_unit_x),
-                (@as(f32, @floatFromInt(tile.y)) * game.settings.pixels_per_unit_y),
-                @as(f32, @floatFromInt(tile.z)) * 32, 
-                0
-            );
+            const tile_pos = utils.tileToPixelCoords(tile);
+            const position = utils.toF32x4(tile_pos);
             const renderer = view.getConst(Components.SpriteRenderer, entity);
             gamestate.batcher.sprite(
                 position, 

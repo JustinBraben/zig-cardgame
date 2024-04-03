@@ -23,14 +23,10 @@ pub fn tileToPixelCoords(self: Components.Tile) Components.Position {
     // Use the tile size and size of window to calculate the position
     // TODO: Eventually may need to change this to accomadate camera view
 
-    const half_width = @as(f32, @floatFromInt(game.settings.window_width / 2));
-    const half_height = @as(f32, @floatFromInt(game.settings.window_height / 2));
-    const tile_pos_x = @as(f32, @floatFromInt(self.x)) * game.settings.pixels_per_unit;
-    const tile_pos_y = @as(f32, @floatFromInt(self.y)) * game.settings.pixels_per_unit;
-
     return .{
-        .x = tile_pos_x / half_width,
-        .y = tile_pos_y / half_height,
+        .x = (@as(f32, @floatFromInt(self.x)) * game.settings.pixels_per_unit_x),
+        .y = (@as(f32, @floatFromInt(self.y)) * game.settings.pixels_per_unit_y),
+        .z = 0,
     };
 }
 

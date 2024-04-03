@@ -88,38 +88,38 @@ pub const GameState = struct {
 
         self.world.* = Registry.init(allocator);
 
-        var index_x: i32 = 1;
-        while (index_x < 2) : (index_x += 1) {
-            var index_y: i32 = 2;
-            while (index_y < 3) : (index_y += 1) {
-                const entity = self.world.create();
-                const tile = Components.Tile{ .x = index_x, .y = index_y };
-                self.world.add(entity, tile);
-                self.world.add(entity, Components.CardValue.Seven);
-                self.world.add(entity, Components.CardSuit.Diamonds);
-                self.world.add(entity, Components.SpriteRenderer{
-                    .index = 0,
-                });
-                self.world.add(entity, Components.SpriteAnimator{
-                    .animation = &animations,
-                    .state = .play,
-                    .fps = if (index_x + index_y < 1) 1 else @as(usize, @intCast(index_x + index_y)),
-                });
-            }
-            // const entity = self.world.create();
-            // const tile = Components.Tile{ .x = index_x, .y = 0 };
-            // self.world.add(entity, tile);
-            // self.world.add(entity, Components.CardValue.Seven);
-            // self.world.add(entity, Components.CardSuit.Diamonds);
-            // self.world.add(entity, Components.SpriteRenderer{
-            //     .index = 0,
-            // });
-            // self.world.add(entity, Components.SpriteAnimator{
-            //     .animation = &animations,
-            //     .state = .play,
-            //     .fps = 3,
-            // });
-        }
+        // var index_x: i32 = 1;
+        // while (index_x < 2) : (index_x += 1) {
+        //     var index_y: i32 = 2;
+        //     while (index_y < 3) : (index_y += 1) {
+        //         const entity = self.world.create();
+        //         const tile = Components.Tile{ .x = index_x, .y = index_y };
+        //         self.world.add(entity, tile);
+        //         self.world.add(entity, Components.CardValue.Seven);
+        //         self.world.add(entity, Components.CardSuit.Diamonds);
+        //         self.world.add(entity, Components.SpriteRenderer{
+        //             .index = 0,
+        //         });
+        //         self.world.add(entity, Components.SpriteAnimator{
+        //             .animation = &animations,
+        //             .state = .play,
+        //             .fps = if (index_x + index_y < 1) 1 else @as(usize, @intCast(index_x + index_y)),
+        //         });
+        //     }
+        //     // const entity = self.world.create();
+        //     // const tile = Components.Tile{ .x = index_x, .y = 0 };
+        //     // self.world.add(entity, tile);
+        //     // self.world.add(entity, Components.CardValue.Seven);
+        //     // self.world.add(entity, Components.CardSuit.Diamonds);
+        //     // self.world.add(entity, Components.SpriteRenderer{
+        //     //     .index = 0,
+        //     // });
+        //     // self.world.add(entity, Components.SpriteAnimator{
+        //     //     .animation = &animations,
+        //     //     .state = .play,
+        //     //     .fps = 3,
+        //     // });
+        // }
 
         const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
         const shader_module_game_window = core.device.createShaderModuleWGSL("game-window.wgsl", shaders.game_window);
@@ -362,6 +362,7 @@ pub const GameState = struct {
                 self.world.add(entity, Components.DeckOrder{
                     .index = index,
                 });
+                self.world.add(entity, Components.Tile{});
                 // log.info("Creating {} of {} at deck order {}", .{value, suit, index});
                 index += 1;
             }
@@ -428,11 +429,11 @@ pub const GameState = struct {
     }
 
     pub fn positionDeck(self: *GameState) void {
-        var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue }, .{}, .{});
+        var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue, Components.Tile }, .{}, .{});
 
         const SortDeckOrder = struct {
             fn sort(_: void, a: Components.DeckOrder, b: Components.DeckOrder) bool {
-                return a.index < b.index;
+                return a.index > b.index;
             }
         };
 
@@ -444,11 +445,25 @@ pub const GameState = struct {
         // }
 
         deck_order_group.sort(Components.DeckOrder, {}, SortDeckOrder.sort);
-        var group_iter_sorted = deck_order_group.iterator(struct { deck_order: *Components.DeckOrder, card_suit: *Components.CardSuit, card_value: *Components.CardValue});
+        var group_iter_sorted = deck_order_group.iterator(struct { deck_order: *Components.DeckOrder, card_suit: *Components.CardSuit, card_value: *Components.CardValue, tile: *Components.Tile});
         std.debug.print("After sort\n", .{});
+        var x: i32 = 0;
+        var y: i32 = 0;
         while (group_iter_sorted.next()) |entity| {
             std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
             // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
+            x += 1;
+
+            if (x > 13) {
+                x = 1;
+                y += 1;
+            }
+            if (y > 3) {
+                y = 1;
+            }
+
+            entity.tile.*.x = x;
+            entity.tile.*.y = y;
         }
     }
 
