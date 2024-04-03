@@ -447,15 +447,15 @@ pub const GameState = struct {
         deck_order_group.sort(Components.DeckOrder, {}, SortDeckOrder.sort);
         var group_iter_sorted = deck_order_group.iterator(struct { deck_order: *Components.DeckOrder, card_suit: *Components.CardSuit, card_value: *Components.CardValue, tile: *Components.Tile});
         std.debug.print("After sort\n", .{});
-        var x: i32 = 0;
+        var x: i32 = -10;
         var y: i32 = 0;
         while (group_iter_sorted.next()) |entity| {
             std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
             // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
             x += 1;
 
-            if (x > 13) {
-                x = 1;
+            if (x > 3) {
+                x = -9;
                 y += 1;
             }
             if (y > 3) {

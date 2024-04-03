@@ -264,6 +264,11 @@
             "name": "Back_of_Card",
             "source": [0, 256, 44, 64],
             "origin": [0, 0]
+        },
+        {
+            "name": "Stack_Outline",
+            "source": [176, 256, 44, 64],
+            "origin": [0, 0]
         }
     ],
     "animations" : [

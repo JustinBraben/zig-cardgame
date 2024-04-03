@@ -121,7 +121,7 @@ pub fn setButtonState(self: *Self, b: MouseButton, mods: Mods, state: ButtonStat
             // Debug
             std.debug.print("Mouse pressed at this position, x : {}, y : {}\n", .{ self.position[0], self.position[1] });
             std.debug.print("Mouse pressed at this world position, x : {}, y : {}\n", .{world_position[0], world_position[1]});
-            const current_tile = utils.pixelToTileCoords(.{ .x = self.position[0], .y = self.position[1] });
+            const current_tile = utils.pixelToTileCoords(.{ .x = world_position[0], .y = world_position[1] });
             std.debug.print("Tile pressed : x {}, y {}\n", .{current_tile.x, current_tile.y});
             // std.debug.print("Tile pressed : x {}, y {}\n", .{utils.tile(world_position[0]), utils.tile(world_position[1])});
         }

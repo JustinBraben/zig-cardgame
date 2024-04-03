@@ -32,14 +32,9 @@ pub fn tileToPixelCoords(self: Components.Tile) Components.Position {
 
 /// Converts pixel to tile coordinates
 pub fn pixelToTileCoords(self: Components.Position) Components.Tile {
-    const half_width = @as(f32, @floatFromInt(game.settings.window_width / 2));
-    const half_height = @as(f32, @floatFromInt(game.settings.window_height / 2));
-    const tile_pos_x = @divFloor((self.x - half_width), game.settings.pixels_per_unit);
-    const tile_pos_y = @divFloor((half_height - self.y), game.settings.pixels_per_unit);
-
     return .{
-        .x = @as(i32, @intFromFloat(tile_pos_x)),
-        .y = @as(i32, @intFromFloat(tile_pos_y)),
+        .x = @as(i32, @intFromFloat(@divFloor(self.x, game.settings.pixels_per_unit_x))),
+        .y = @as(i32, @intFromFloat(@divFloor(self.y, game.settings.pixels_per_unit_y))),
     };
 }
 
@@ -52,6 +47,8 @@ pub fn positionApproxEq(a: Components.Position, b: Components.Position, toleranc
 }
 
 test "Tile position to pixel position" {
+    // TODO: should have the tolerance be by x and y separately
+    // And have the tolerance be by pixels_per_unit_x and pixels_per_unit_y
     const tolerance_f32 = @sqrt(std.math.floatEps(f32));
 
     const tiles = [_]Components.Tile{
@@ -63,9 +60,9 @@ test "Tile position to pixel position" {
     };
 
     const expected_positions = [_]Components.Position{
-        .{ .x = 0, .y = 0 },
-        .{ .x = 0.1, .y = 0.0 },
-        .{ .x = 0, .y = -0.25 },
+        .{ .x = 0.0, .y = 0.0 },
+        .{ .x = 88.0, .y = 0.0 },
+        .{ .x = 0.0, .y = -192.00 },
         // .{ .x = 0, .y = 0.166666671 },
         // .{ .x = -0.125, .y = -0.208333328 },
     };
@@ -82,17 +79,17 @@ pub fn tilePositionEq(a: Components.Tile, b: Components.Tile) bool {
 
 test "Pixel position to Tile position" {
     const positions = [_]Components.Position{
-        .{ .x = 645, .y = 356 },
-        .{ .x = 694, .y = 404 },
-        .{ .x = 16, .y = 17 },
-        .{ .x = 1276, .y = 738 },
+        .{ .x = 19, .y = 39 },
+        .{ .x = 57, .y = -27 },
+        .{ .x = -374, .y = 140 },
+        .{ .x = 169, .y = 76 },
     };
 
     const expected_tiles = [_]Components.Tile{
         .{ .x = 0, .y = 0 },
         .{ .x = 1, .y = -1 },
-        .{ .x = -20, .y = 11 },
-        .{ .x = 19, .y = -12 },
+        .{ .x = -9, .y = 2 },
+        .{ .x = 3, .y = 1 },
     };
 
     for (positions, expected_tiles) |position, expected_tile| {
