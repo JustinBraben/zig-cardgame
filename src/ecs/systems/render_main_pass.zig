@@ -101,20 +101,17 @@ pub fn renderSprites(gamestate: *GameState) !void {
                 0
             );
             const renderer = view.getConst(Components.SpriteRenderer, entity);
-            try gamestate.batcher.sprite(
+            gamestate.batcher.sprite(
                 position, 
                 &gamestate.default_texture,
                 gamestate.atlas.sprites[renderer.index],
                 .{
-                    .color = renderer.color,
-                    .vert_mode = renderer.vert_mode,
-                    .frag_mode = renderer.frag_mode,
                     .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
+                    .rotation = 0.0,
                     .flip_x = false,
                     .flip_y = false,
-                    .rotation = 0.0,
                 },
-            );
+            ) catch unreachable;
         }
         try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
     }
@@ -137,8 +134,8 @@ pub fn renderSprites(gamestate: *GameState) !void {
         .mvp = zmath.transpose(gamestate.camera.frameBufferMatrix()),
     };
     try gamestate.batcher.begin(.{
-        .pipeline_handle = gamestate.pipeline_default,
-        .bind_group_handle = gamestate.bind_group_default,
+        .pipeline_handle = gamestate.pipeline_default_output,
+        .bind_group_handle = gamestate.bind_group_default_output,
     });
     // const pos = gamestate.camera.worldToScreen(
     //     zmath.f32x4(

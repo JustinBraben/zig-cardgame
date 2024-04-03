@@ -55,10 +55,12 @@ pub const GameState = struct {
     camera: gfx.Camera = undefined,
     pipeline_default: *gpu.RenderPipeline = undefined,
     pipeline_game_window: *gpu.RenderPipeline = undefined,
+    pipeline_default_output: *gpu.RenderPipeline = undefined,
     vertex_buffer_default: *gpu.Buffer = undefined,
     index_buffer_default: *gpu.Buffer = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
     bind_group_game_window: *gpu.BindGroup = undefined,
+    bind_group_default_output: *gpu.BindGroup = undefined,
     uniform_buffer_default: *gpu.Buffer = undefined,
     uniform_buffer_final: *gpu.Buffer = undefined,
     batcher: gfx.Batcher = undefined,
@@ -86,9 +88,9 @@ pub const GameState = struct {
 
         self.world.* = Registry.init(allocator);
 
-        var index_x: i32 = 0;
-        while (index_x < 1) : (index_x += 1) {
-            var index_y: i32 = 0;
+        var index_x: i32 = 1;
+        while (index_x < 2) : (index_x += 1) {
+            var index_y: i32 = 2;
             while (index_y < 3) : (index_y += 1) {
                 const entity = self.world.create();
                 const tile = Components.Tile{ .x = index_x, .y = index_y };
@@ -193,6 +195,7 @@ pub const GameState = struct {
 
         const pipeline = core.device.createRenderPipeline(&pipeline_descriptor);
         const pipeline_game_window = core.device.createRenderPipeline(&pipeline_descriptor_game_window);
+        const pipeline_default_output = core.device.createRenderPipeline(&pipeline_descriptor);
 
         const vertex_buffer = core.device.createBuffer(&.{
             .usage = .{ .vertex = true },
@@ -251,8 +254,9 @@ pub const GameState = struct {
 
         const pipeline_layout_default = pipeline.getBindGroupLayout(0);
         const pipeline_layout_game_window = pipeline_game_window.getBindGroupLayout(0);
+        const pipeline_layout_default_output = pipeline_default_output.getBindGroupLayout(0);
 
-        const bind_group = core.device.createBindGroup(
+        const bind_group_default = core.device.createBindGroup(
             &gpu.BindGroup.Descriptor.init(.{
                 .layout = pipeline_layout_default,
                 .entries = &.{
@@ -274,16 +278,30 @@ pub const GameState = struct {
             }),
         );
 
+        const bind_group_default_output = core.device.createBindGroup(
+            &gpu.BindGroup.Descriptor.init(.{
+                .layout = pipeline_layout_default_output,
+                .entries = &.{
+                    gpu.BindGroup.Entry.buffer(0, self.uniform_buffer_default, 0, @sizeOf(UniformBufferObject)),
+                    gpu.BindGroup.Entry.textureView(1, self.default_output.view_handle),
+                    gpu.BindGroup.Entry.sampler(2, self.default_output.sampler_handle),
+                },
+            })
+        );
+
         self.batcher = try gfx.Batcher.init(allocator, 1);
         pipeline_layout_default.release();
         pipeline_layout_game_window.release();
+        pipeline_layout_default_output.release();
 
         self.pipeline_default = pipeline;
         self.pipeline_game_window = pipeline_game_window;
+        self.pipeline_default_output = pipeline_default_output;
         self.vertex_buffer_default = vertex_buffer;
         self.index_buffer_default = index_buffer;
-        self.bind_group_default = bind_group;
+        self.bind_group_default = bind_group_default;
         self.bind_group_game_window = bind_group_game_window;
+        self.bind_group_default_output = bind_group_default_output;
         return self;
     }
 
@@ -410,11 +428,14 @@ pub const GameState = struct {
 
     pub fn deinit(self: *GameState) void {
         self.pipeline_default.release();
+        self.pipeline_game_window.release();
+        self.pipeline_default_output.release();
         self.vertex_buffer_default.release();
         self.index_buffer_default.release();
 
         self.bind_group_default.release();
         self.bind_group_game_window.release();
+        self.bind_group_default_output.release();
 
         self.uniform_buffer_default.release();
         self.uniform_buffer_final.release();
