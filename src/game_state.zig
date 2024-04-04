@@ -53,6 +53,9 @@ pub const GameState = struct {
     game_time: f32 = 0.0,
     world: *Registry = undefined,
     camera: gfx.Camera = undefined,
+    scanner_time: f32 = 0.0,
+    scanner_state: bool = false,
+    scanner_position: [2]f32 = .{ 0.0, 0.0 },
     pipeline_default: *gpu.RenderPipeline = undefined,
     pipeline_game_window: *gpu.RenderPipeline = undefined,
     pipeline_default_output: *gpu.RenderPipeline = undefined,
@@ -334,6 +337,8 @@ pub const GameState = struct {
                 Components.SpriteRenderer,
                 Components.Tile,
                 Components.IsShuffled,
+                Components.Position,
+                Components.Moveable,
                 }, 
             .{});
         var view_deck_entity_iter = view_deck.entityIterator();
@@ -384,6 +389,7 @@ pub const GameState = struct {
                 });
                 self.world.addOrReplace(entity, Components.Tile{});
                 self.world.addOrReplace(entity, Components.Position{});
+                self.world.add(entity, Components.Moveable{}); // card is moveable
                 // log.info("Creating {} of {} at deck order {}", .{value, suit, index});
                 index += 1;
             }

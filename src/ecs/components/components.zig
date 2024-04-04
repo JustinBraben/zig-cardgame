@@ -45,6 +45,7 @@ pub const IsShuffled = struct {};
 pub const SpriteRenderer = sprites.SpriteRenderer;
 pub const SpriteAnimator = sprites.SpriteAnimator;
 
+pub const Request = struct {};
 pub const Drag = struct {
     start: Position,
     end: Position,

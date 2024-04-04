@@ -121,7 +121,10 @@ pub fn update(app: *App) !bool {
             },
             .mouse_press => |mouse_press| {
                 state.mouse.setButtonState(mouse_press.button, mouse_press.mods, .press);
-                std.debug.print("Current Camera position, x : {}, y: {}\n", .{state.camera.position[0], state.camera.position[1]});
+                // std.debug.print("Current Camera position, x : {}, y: {}\n", .{state.camera.position[0], state.camera.position[1]});
+            },
+            .mouse_release => |mouse_release| {
+                state.mouse.setButtonState(mouse_release.button, mouse_release.mods, .release);
             },
             .close => return true,
             .framebuffer_resize => |size| {

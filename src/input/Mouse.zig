@@ -91,9 +91,10 @@ test "Button testing" {
 
 pub fn tile(self: *Self) [2]i32 {
     const world_position = game.state.camera.screenToWorld(zmath.f32x4(self.position[0], self.position[1], 0, 0));
+    const current_tile = utils.pixelToTileCoords(.{ .x = world_position[0], .y = world_position[1] });
     return .{
-        game.math.tile(world_position[0]),
-        game.math.tile(world_position[1]),
+        current_tile.x,
+        current_tile.y,
     };
 }
 
@@ -101,20 +102,21 @@ pub fn setButtonState(self: *Self, b: MouseButton, mods: Mods, state: ButtonStat
     for (self.buttons) |*bt| {
         if (bt.button == b) {
             const world_position = game.state.camera.screenToWorld(zmath.f32x4(self.position[0], self.position[1], 0, 0));
+            const current_tile = utils.pixelToTileCoords(.{ .x = world_position[0], .y = world_position[1] });
             if (state == .release or bt.mods == null) {
                 bt.previous_state = bt.state;
                 switch (state) {
                     .press => {
                         bt.state = true;
                         bt.pressed_mods = mods;
-                        bt.pressed_tile[0] = utils.tile(world_position[0]);
-                        bt.pressed_tile[1] = utils.tile(world_position[1]);
+                        bt.pressed_tile[0] = current_tile.x;
+                        bt.pressed_tile[1] = current_tile.y;
                     },
                     else => {
                         bt.state = false;
                         bt.released_mods = mods;
-                        bt.released_tile[0] = utils.tile(world_position[0]);
-                        bt.released_tile[1] = utils.tile(world_position[1]);
+                        bt.released_tile[0] = current_tile.x;
+                        bt.released_tile[1] = current_tile.y;
                     },
                 }
             } else if (bt.mods) |md| {
@@ -124,14 +126,14 @@ pub fn setButtonState(self: *Self, b: MouseButton, mods: Mods, state: ButtonStat
                         .press => {
                             bt.state = true;
                             bt.pressed_mods = mods;
-                            bt.pressed_tile[0] = utils.tile(world_position[0]);
-                            bt.pressed_tile[1] = utils.tile(world_position[1]);
+                            bt.pressed_tile[0] = current_tile.x;
+                            bt.pressed_tile[1] = current_tile.y;
                         },
                         else => {
                             bt.state = false;
                             bt.released_mods = mods;
-                            bt.released_tile[0] = utils.tile(world_position[0]);
-                            bt.released_tile[1] = utils.tile(world_position[1]);
+                            bt.released_tile[0] = current_tile.x;
+                            bt.released_tile[1] = current_tile.y;
                         },
                     }
                 }
@@ -140,8 +142,8 @@ pub fn setButtonState(self: *Self, b: MouseButton, mods: Mods, state: ButtonStat
             // Debug
             // std.debug.print("Mouse pressed at this position, x : {}, y : {}\n", .{ self.position[0], self.position[1] });
             // std.debug.print("Mouse pressed at this world position, x : {}, y : {}\n", .{world_position[0], world_position[1]});
-            const current_tile = utils.pixelToTileCoords(.{ .x = world_position[0], .y = world_position[1] });
-            std.debug.print("Tile pressed : x {}, y {}\n", .{current_tile.x, current_tile.y});
+            // const current_tile = utils.pixelToTileCoords(.{ .x = world_position[0], .y = world_position[1] });
+            // std.debug.print("Tile pressed : x {}, y {}\n", .{current_tile.x, current_tile.y});
             // std.debug.print("Tile pressed : x {}, y {}\n", .{utils.tile(world_position[0]), utils.tile(world_position[1])});
         }
     }
