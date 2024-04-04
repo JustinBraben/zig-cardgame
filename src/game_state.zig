@@ -383,6 +383,7 @@ pub const GameState = struct {
                     .index = index,
                 });
                 self.world.addOrReplace(entity, Components.Tile{});
+                self.world.addOrReplace(entity, Components.Position{});
                 // log.info("Creating {} of {} at deck order {}", .{value, suit, index});
                 index += 1;
             }
@@ -449,7 +450,7 @@ pub const GameState = struct {
     }
 
     pub fn positionDeck(self: *GameState) void {
-        var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue, Components.Tile }, .{}, .{});
+        var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue, Components.Tile, Components.Position }, .{}, .{});
 
         const SortDeckOrder = struct {
             fn sort(_: void, a: Components.DeckOrder, b: Components.DeckOrder) bool {
@@ -465,12 +466,19 @@ pub const GameState = struct {
         // }
 
         deck_order_group.sort(Components.DeckOrder, {}, SortDeckOrder.sort);
-        var group_iter_sorted = deck_order_group.iterator(struct { deck_order: *Components.DeckOrder, card_suit: *Components.CardSuit, card_value: *Components.CardValue, tile: *Components.Tile});
-        std.debug.print("After sort\n", .{});
+        var group_iter_sorted = deck_order_group.iterator(struct { 
+            deck_order: *Components.DeckOrder, 
+            card_suit: *Components.CardSuit, 
+            card_value: *Components.CardValue, 
+            tile: *Components.Tile, 
+            pos: *Components.Position
+            }
+        );
+        //std.debug.print("After sort\n", .{});
         var x: i32 = -10;
         var y: i32 = 0;
         while (group_iter_sorted.next()) |entity| {
-            std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
+            // std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
             // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
             x += 1;
 
@@ -484,6 +492,10 @@ pub const GameState = struct {
 
             entity.tile.*.x = x;
             entity.tile.*.y = y;
+
+            const tile_to_position = utils.tileToPixelCoords(entity.tile.*);
+            entity.pos.*.x = tile_to_position.x;
+            entity.pos.*.y = tile_to_position.y;
         }
     }
 

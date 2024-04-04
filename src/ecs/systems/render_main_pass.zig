@@ -83,12 +83,11 @@ pub fn renderSprites(gamestate: *GameState) !void {
             .bind_group_handle = gamestate.bind_group_default,
             .output_handle = gamestate.default_output.view_handle,
         });
-        var view = gamestate.world.view(.{ Components.Tile, Components.SpriteRenderer }, .{});
+        var view = gamestate.world.view(.{ Components.Position, Components.SpriteRenderer }, .{});
         var iter = view.entityIterator();
         while (iter.next()) |entity| {
-            const tile = view.getConst(Components.Tile, entity);
-            const tile_pos = utils.tileToPixelCoords(tile);
-            const position = utils.toF32x4(tile_pos);
+            const pos = view.getConst(Components.Position, entity);
+            const position = utils.toF32x4(pos);
             const renderer = view.getConst(Components.SpriteRenderer, entity);
             gamestate.batcher.sprite(
                 position, 

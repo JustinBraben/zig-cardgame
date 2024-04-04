@@ -10,6 +10,7 @@ const GameState = @import("game_state.zig").GameState;
 pub const Components = @import("ecs/components/components.zig");
 const Position = Components.Position;
 const CardSuit = Components.CardSuit;
+const SolitaireWorld = @import("ecs/systems/solitaire_world.zig");
 const RenderMainPass = @import("ecs/systems/render_main_pass.zig");
 const RenderFinalPass = @import("ecs/systems/render_final_pass.zig");
 pub const gfx = @import("gfx/gfx.zig");
@@ -165,69 +166,15 @@ pub fn update(app: *App) !bool {
         };
     }
 
-    // TODO: Put this block into a systems function
-    var view = state.world.view(.{ Components.SpriteRenderer, Components.SpriteAnimator }, .{});
-    var entityIter = view.entityIterator();
-    while (entityIter.next()) |entity| {
-        var spriteRenderer = view.get(Components.SpriteRenderer, entity);
-        var spriteAnimator = view.get(Components.SpriteAnimator, entity);
-
-        if (spriteAnimator.state == .play) {
-            spriteAnimator.elapsed += state.delta_time;
-
-            if (spriteAnimator.elapsed > (1.0 / @as(f32, @floatFromInt(spriteAnimator.fps)))) {
-                spriteAnimator.elapsed = 0.0;
-                
-
-                if (spriteAnimator.frame < spriteAnimator.animation.len - 1) {
-                    spriteAnimator.frame += 1;
-                } else {
-                    spriteAnimator.frame = 0;
-                }
-                spriteRenderer.index = spriteAnimator.animation[spriteAnimator.frame];
-            }
-        }
-    }
-
-    // TODO: Put this block into a systems function
-    var cameraView = state.world.view(.{ Components.Camera, Components.Position }, .{});
-    var cameraIter = cameraView.entityIterator();
-    while (cameraIter.next()) |entity| {
-        const position = cameraView.get(Components.Position, entity);
-        state.camera.position = zmath.f32x4(position.x, position.y, position.z, 0);
-    }
-
-    // TODO: have systems work like this
-    // try MovementDragSystem.run(state);
-    // try MovementSnapSystem.run(state);
-    // try MovementAutoSystem.run(state);
-
-    // try RenderMainPass.renderTable(state);
-    // try RenderMainPass.run(state);
-    try RenderMainPass.renderSprites(state);
+    // The world progresses through this main function
+    // Any systems that need to run will be called here
+    try SolitaireWorld.progress(state);
 
     const batcher_commands = try state.batcher.finish();
     defer batcher_commands.release();
 
     core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
     core.swap_chain.present();
-
-    // TODO: Have the rendering work like this
-    // try RenderBackground.run(state);         // Render the background
-    // try RenderPileOutlines.run(state);       // Render the outlines of the piles
-    // try RenderCards.run(state);              // Render the cards
-
-    // if (core.swap_chain.getCurrentTextureView()) |back_buffer_view| {
-    //     defer back_buffer_view.release();
-
-    //     try RenderMainPass.run(state);
-
-    //     const batcher_commands = try state.batcher.finish();
-    //     defer batcher_commands.release();
-
-    //     core.queue.submit(&[_]*gpu.CommandBuffer{batcher_commands});
-    //     core.swap_chain.present();
-    // }
 
     for (state.hotkeys.hotkeys) |*hk| {
         hk.previous_state = hk.state;
