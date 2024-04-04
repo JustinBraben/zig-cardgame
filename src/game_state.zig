@@ -81,13 +81,15 @@ pub const GameState = struct {
     pub fn init(allocator: Allocator) !*GameState {
         var self = try allocator.create(GameState);
         self.allocator = allocator;
+        
+        self.camera = gfx.Camera.init(zmath.f32x4s(0));
+        self.camera.zoom = 1.0;
+
         self.world = try allocator.create(Registry);
 
         self.mouse = try input.Mouse.initDefault(allocator);
         self.hotkeys = try input.Hotkeys.initDefault(allocator);
 
-        self.camera = gfx.Camera.init(zmath.f32x4s(0));
-        self.camera.zoom = 1.0;
 
         self.world.* = Registry.init(allocator);
 
@@ -480,21 +482,11 @@ pub const GameState = struct {
             pos: *Components.Position
             }
         );
-        //std.debug.print("After sort\n", .{});
-        var x: i32 = -10;
+        var x: i32 = 0;
         var y: i32 = 0;
         while (group_iter_sorted.next()) |entity| {
             // std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
             // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
-            x += 1;
-
-            if (x > 3) {
-                x = -9;
-                y += 1;
-            }
-            if (y > 3) {
-                y = 1;
-            }
 
             entity.tile.*.x = x;
             entity.tile.*.y = y;
@@ -502,6 +494,18 @@ pub const GameState = struct {
             const tile_to_position = utils.tileToPixelCoords(entity.tile.*);
             entity.pos.*.x = tile_to_position.x;
             entity.pos.*.y = tile_to_position.y;
+
+            x += 1;
+
+            if (x > 12) {
+                x = 0;
+                y += 1;
+            }
+            if (y > 3) {
+                y = 0;
+            }
+
+            std.debug.print("Card at tile x: {}, y: {}, is {any} of {any}\n", .{entity.tile.*.x, entity.tile.*.y, entity.card_value.*, entity.card_suit.*});
         }
     }
 

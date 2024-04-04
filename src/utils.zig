@@ -34,7 +34,7 @@ pub fn tileToPixelCoords(self: Components.Tile) Components.Position {
 pub fn pixelToTileCoords(self: Components.Position) Components.Tile {
     return .{
         .x = @as(i32, @intFromFloat(@divFloor(self.x, game.settings.pixels_per_unit_x))),
-        .y = @as(i32, @intFromFloat(@divFloor(self.y, game.settings.pixels_per_unit_y))),
+        .y = @as(i32, @intFromFloat(@ceil(self.y / game.settings.pixels_per_unit_y))),
     };
 }
 
@@ -86,10 +86,10 @@ test "Pixel position to Tile position" {
     };
 
     const expected_tiles = [_]Components.Tile{
-        .{ .x = 0, .y = 0 },
-        .{ .x = 1, .y = -1 },
-        .{ .x = -9, .y = 2 },
-        .{ .x = 3, .y = 1 },
+        .{ .x = 0, .y = 1 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = -9, .y = 3 },
+        .{ .x = 3, .y = 2 },
     };
 
     for (positions, expected_tiles) |position, expected_tile| {

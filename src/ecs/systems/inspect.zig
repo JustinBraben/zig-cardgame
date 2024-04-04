@@ -37,41 +37,17 @@ pub fn run(gamestate: *GameState) void {
     if (gamestate.mouse.button(.primary)) |btn| {
         if (btn.pressed()) {
             const mouse_tile = gamestate.mouse.tile();
-            // var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue }, .{});
-            // var entityIter = view.entityIterator();
+            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue }, .{});
+            var entityIter = view.entityIterator();
 
-            // while (entityIter.next()) |entity| {
-            //     const card_suite = view.getConst(Components.CardSuit, entity);
-            //     const card_value = view.getConst(Components.CardValue, entity);
-            //     const tile = view.getConst(Components.Tile, entity);
-            //     if (tile.x == mouse_tile[0] and tile.y == mouse_tile[1]) {
-            //         std.debug.print("Found card on tile clicked, {any} of {any}\n", .{card_value, card_suite});
-            //     }
-            // }
-
-            std.debug.print("Tile pressed : x {}, y {}\n", .{mouse_tile[0], mouse_tile[1]});
+            while (entityIter.next()) |entity| {
+                const card_suite = view.getConst(Components.CardSuit, entity);
+                const card_value = view.getConst(Components.CardValue, entity);
+                const tile = view.getConst(Components.Tile, entity);
+                if (tile.x == mouse_tile[0] and tile.y == mouse_tile[1]) {
+                    std.debug.print("Found card on tile clicked, {any} of {any}\n", .{card_value, card_suite});
+                }
+            }
         }
     }
-
-    // var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue }, .{});
-    // var entityIter = view.entityIterator();
-
-    // const mouse = gamestate.mouse.tile();
-    // inspect_tile = .{
-    //     .x = mouse[0],
-    //     .y = mouse[1],
-    // };
-
-    // if (inspect_tile) |*mouse_tile| {
-    //     var card_on_tile = false;
-    //     while (entityIter.next()) |entity| {
-    //         const card_suite = view.getConst(Components.CardSuit, entity);
-    //         const card_value = view.getConst(Components.CardValue, entity);
-    //         const tile = view.getConst(Components.Tile, entity);
-    //         if (tile.x == mouse_tile.x and tile.y == mouse_tile.y) {
-    //             card_on_tile = true;
-    //             std.debug.print("Found card on tile clicked, {any} of {any}\n", .{card_suite, card_value});
-    //         }
-    //     }
-    // }
 }
