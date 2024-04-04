@@ -1,4 +1,5 @@
 const std = @import("std");
+const testing = std.testing;
 const log = std.log.scoped(.main);
 const assert = std.debug.assert;
 const core = @import("mach").core;
@@ -21,8 +22,11 @@ pub const UniformBufferObject = struct {
 };
 
 test {
+    // TODO: refactor code so we can use this here:
+    // testing.refAllDeclsRecursive(@This());
     _ = @import("utils.zig");
     _ = @import("input/Hotkeys.zig");
+    _ = @import("input/Mouse.zig");
 }
 
 pub const App = @This();

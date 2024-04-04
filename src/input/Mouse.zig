@@ -1,4 +1,6 @@
 const std = @import("std");
+const testing = std.testing;
+const assert = std.debug.assert;
 const zmath = @import("zmath");
 const utils = @import("../utils.zig");
 const game = @import("../main.zig");
@@ -68,6 +70,23 @@ pub fn button(self: *Self, action: Action) ?*Button {
         }
     }
     return null;
+}
+
+test "Button testing" {
+    const testing_allocator = testing.allocator;
+    var buttons = try initDefault(testing_allocator);
+    defer testing_allocator.free(buttons.buttons);
+
+    try testing.expectEqual(2, buttons.buttons.len);
+
+    try testing.expect(buttons.button(.primary) != null);
+    try testing.expect(buttons.button(.secondary) != null);
+
+    var btn = buttons.button(.primary);
+    try testing.expectEqual(buttons.button(.primary), btn.?);
+
+    btn = buttons.button(.secondary);
+    try testing.expectEqual(buttons.button(.secondary), btn.?);
 }
 
 pub fn tile(self: *Self) [2]i32 {

@@ -1,6 +1,6 @@
 const std = @import("std");
+const log = std.log.scoped(.build);
 const mach = @import("mach");
-const zigimg = @import("zigimg");
 
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
@@ -26,35 +26,21 @@ pub fn build(b: *std.Build) !void {
         .core = true,
     });
 
-    const zigimg_dep = b.dependency("zigimg", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const ecs_dep = b.dependency("zig-ecs", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const zmath_dep = b.dependency("zmath", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
     // This is a list of dependencies for the app. Add anything you want the app to be able to @import
     var deps = std.ArrayList(std.Build.Module.Import).init(b.allocator);
-    try deps.append(std.Build.Module.Import{
-        .name = "zigimg",
-        .module = zigimg_dep.module("zigimg"),
-    });
-    try deps.append(std.Build.Module.Import{
-        .name = "zig-ecs",
-        .module = ecs_dep.module("zig-ecs"),
-    });
-    try deps.append(std.Build.Module.Import{
-        .name = "zmath",
-        .module = zmath_dep.module("zmath"),
-    });
+    for (b.available_deps) |dep| {
+        // Skip mach dependency, as it's already included in the mach_dep
+        if (!std.mem.eql(u8, dep[0], "mach")){
+            const found_dep = b.dependency(dep[0], .{
+                .target = target,
+                .optimize = optimize,
+            });
+            try deps.append(std.Build.Module.Import{
+                .name = dep[0],
+                .module = found_dep.module(dep[0]),
+            });
+        }
+    }
 
     const app = try mach.CoreApp.init(b, mach_dep.builder, .{
         .name = "myapp",
@@ -80,6 +66,10 @@ pub fn build(b: *std.Build) !void {
     });
     // This adds the `mach` dependency to the unit tests.
     unit_tests.root_module.addImport("mach", mach_dep.module("mach"));
+    // The rest of the deps can be added through a loop
+    for (deps.items) |dep| {
+        unit_tests.root_module.addImport(dep.name, dep.module);
+    }
 
     // Similar to creating the run step earlier, this exposes a `test` step to
     // the `zig build --help` menu, providing a way for the user to request
