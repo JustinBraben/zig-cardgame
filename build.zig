@@ -78,6 +78,8 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    // This adds the `mach` dependency to the unit tests.
+    unit_tests.root_module.addImport("mach", mach_dep.module("mach"));
 
     // Similar to creating the run step earlier, this exposes a `test` step to
     // the `zig build --help` menu, providing a way for the user to request

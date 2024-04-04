@@ -1,4 +1,6 @@
 const std = @import("std");
+const testing = std.testing;
+const assert = std.debug.assert;
 const zmath = @import("zmath");
 const game = @import("../main.zig");
 const core = @import("mach").core;
@@ -65,6 +67,28 @@ pub fn hotkey(self: *Self, action: Action) ?*Hotkey {
         }
     }
     return found;
+}
+
+test "Hotkey testing" {
+    const testing_allocator = testing.allocator;
+    var hotkeys = try initDefault(testing_allocator);
+    defer testing_allocator.free(hotkeys.hotkeys);
+
+    try testing.expectEqual(11, hotkeys.hotkeys.len);
+
+    try testing.expect(hotkeys.hotkey(.directional_up) != null);
+    try testing.expect(hotkeys.hotkey(.directional_down) != null);
+    try testing.expect(hotkeys.hotkey(.directional_right) != null);
+    try testing.expect(hotkeys.hotkey(.directional_left) != null);
+    try testing.expect(hotkeys.hotkey(.scanner) != null);
+    try testing.expect(hotkeys.hotkey(.inspect) != null);
+    try testing.expect(hotkeys.hotkey(.new_game) != null);
+
+    var hk = hotkeys.hotkey(.new_game);
+    try testing.expectEqual(hotkeys.hotkey(.new_game), hk.?);
+
+    hk = hotkeys.hotkey(.directional_up);
+    try testing.expectEqual(hotkeys.hotkey(.directional_up), hk.?);
 }
 
 pub fn setHotkeyState(self: *Self, k: Key, mods: Mods, state: KeyState) void {

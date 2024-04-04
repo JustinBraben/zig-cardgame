@@ -22,6 +22,7 @@ pub const UniformBufferObject = struct {
 
 test {
     _ = @import("utils.zig");
+    _ = @import("input/Hotkeys.zig");
 }
 
 pub const App = @This();
