@@ -20,13 +20,18 @@ pub fn run(gamestate: *GameState) void {
             var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue }, .{});
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
+                // TODO: use initial pos and find the min and max x and y values for positions
+                const entity_pos = view.getConst(Components.Position, entity);
                 const tile = view.getConst(Components.Tile, entity);
+                if (utils.positionWithinArea(.{ .x = initial_pos[0], .y = initial_pos[1]}, entity_pos)){
+                    std.debug.print("Found card pressed at position x : {}, y : {}\n", .{entity_pos.x, entity_pos.y});
+                }
                 if (tile.x == starting_tile.x and tile.y == starting_tile.y){
                     const drag = Components.Drag{ 
                         .start = .{ .x = initial_pos[0] - tile_half_size[0], .y = initial_pos[1] + tile_half_size[1]}, 
                         .end = .{ .x = initial_pos[0] - tile_half_size[0], .y = initial_pos[1] + tile_half_size[1]}
                     };
-                    gamestate.world.add(entity, drag);
+                    gamestate.world.addOrReplace(entity, drag);
                 }
             }
         }
