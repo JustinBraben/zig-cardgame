@@ -26,6 +26,8 @@ pub const Button = struct {
     action: Action,
     state: bool = false,
     previous_state: bool = false,
+    pressed_position: [2]f32 = .{ 0.0, 0.0 },
+    released_position: [2]f32 = .{ 0.0, 0.0 },
     pressed_tile: [2]i32 = .{ 0, 0 },
     released_tile: [2]i32 = .{ 0, 0 },
     pressed_mods: Mods = std.mem.zeroes(Mods),
@@ -109,12 +111,16 @@ pub fn setButtonState(self: *Self, b: MouseButton, mods: Mods, state: ButtonStat
                     .press => {
                         bt.state = true;
                         bt.pressed_mods = mods;
+                        bt.pressed_position[0] = world_position[0];
+                        bt.pressed_position[1] = world_position[1];
                         bt.pressed_tile[0] = current_tile.x;
                         bt.pressed_tile[1] = current_tile.y;
                     },
                     else => {
                         bt.state = false;
                         bt.released_mods = mods;
+                        bt.released_position[0] = world_position[0];
+                        bt.released_position[1] = world_position[1];
                         bt.released_tile[0] = current_tile.x;
                         bt.released_tile[1] = current_tile.y;
                     },

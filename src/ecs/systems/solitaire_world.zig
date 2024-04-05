@@ -10,6 +10,8 @@ const utils = @import("../../utils.zig");
 // Systems are functions that operate on the game state
 const AnimationSprite = @import("animation_sprite.zig");
 
+const MovementDrag = @import("movement_drag.zig");
+
 const Inspect = @import("inspect.zig");
 const ScanMouse = @import("scan_mouse.zig");
 
@@ -25,6 +27,8 @@ pub fn progress(gamestate: *GameState) !void {
 
     Inspect.run(gamestate);
     ScanMouse.run(gamestate);
+
+    MovementDrag.run(gamestate);
 
     CameraFollow.run(gamestate);
 

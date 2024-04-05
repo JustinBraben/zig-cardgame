@@ -9,6 +9,20 @@ pub fn toF32x4(self: Components.Position) zmath.F32x4 {
     return zmath.f32x4(self.x, self.y, 0.0, 0.0);
 }
 
+pub fn getTileCentre(self: Components.Tile) Components.Position {
+    return .{
+        .x = (@as(f32, @floatFromInt(self.x)) * game.settings.pixels_per_unit_x) - (game.settings.pixels_per_unit_x / 2.0),
+        .y = (@as(f32, @floatFromInt(self.y)) * game.settings.pixels_per_unit_y) - (game.settings.pixels_per_unit_y / 2.0),
+    };
+}
+
+pub fn getTileHalfSize() [2]f32 {
+    return .{
+        (game.settings.pixels_per_unit_x / 2.0),
+        (game.settings.pixels_per_unit_y / 2.0),
+    };
+}
+
 pub fn getTileSize() Components.Position {
     return .{
         .x = settings.pixels_per_unit / @as(f32, @floatFromInt(game.settings.window_width)) * 2.0,
