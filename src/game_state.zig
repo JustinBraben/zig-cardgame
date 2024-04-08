@@ -60,7 +60,6 @@ pub const GameState = struct {
     pipeline_game_window: *gpu.RenderPipeline = undefined,
     pipeline_default_output: *gpu.RenderPipeline = undefined,
     vertex_buffer_default: *gpu.Buffer = undefined,
-    index_buffer_default: *gpu.Buffer = undefined,
     bind_group_default: *gpu.BindGroup = undefined,
     bind_group_game_window: *gpu.BindGroup = undefined,
     bind_group_default_output: *gpu.BindGroup = undefined,
@@ -92,39 +91,6 @@ pub const GameState = struct {
 
 
         self.world.* = Registry.init(allocator);
-
-        // var index_x: i32 = 1;
-        // while (index_x < 2) : (index_x += 1) {
-        //     var index_y: i32 = 2;
-        //     while (index_y < 3) : (index_y += 1) {
-        //         const entity = self.world.create();
-        //         const tile = Components.Tile{ .x = index_x, .y = index_y };
-        //         self.world.add(entity, tile);
-        //         self.world.add(entity, Components.CardValue.Seven);
-        //         self.world.add(entity, Components.CardSuit.Diamonds);
-        //         self.world.add(entity, Components.SpriteRenderer{
-        //             .index = 0,
-        //         });
-        //         self.world.add(entity, Components.SpriteAnimator{
-        //             .animation = &animations,
-        //             .state = .play,
-        //             .fps = if (index_x + index_y < 1) 1 else @as(usize, @intCast(index_x + index_y)),
-        //         });
-        //     }
-        //     // const entity = self.world.create();
-        //     // const tile = Components.Tile{ .x = index_x, .y = 0 };
-        //     // self.world.add(entity, tile);
-        //     // self.world.add(entity, Components.CardValue.Seven);
-        //     // self.world.add(entity, Components.CardSuit.Diamonds);
-        //     // self.world.add(entity, Components.SpriteRenderer{
-        //     //     .index = 0,
-        //     // });
-        //     // self.world.add(entity, Components.SpriteAnimator{
-        //     //     .animation = &animations,
-        //     //     .state = .play,
-        //     //     .fps = 3,
-        //     // });
-        // }
 
         const shader_module = core.device.createShaderModuleWGSL("default.wgsl", shaders.default);
         const shader_module_game_window = core.device.createShaderModuleWGSL("game-window.wgsl", shaders.game_window);
@@ -203,22 +169,10 @@ pub const GameState = struct {
         const pipeline_default_output = core.device.createRenderPipeline(&pipeline_descriptor);
 
         const vertex_buffer = core.device.createBuffer(&.{
-            .usage = .{ .vertex = true },
-            .size = @sizeOf(Vertex) * vertices.len,
-            .mapped_at_creation = .true,
+            .usage = .{ .copy_dst = true, .uniform = true },
+            .size = @sizeOf(UniformBufferObject),
+            .mapped_at_creation = .false,
         });
-        const vertex_mapped = vertex_buffer.getMappedRange(Vertex, 0, vertices.len);
-        @memcpy(vertex_mapped.?, vertices[0..]);
-        vertex_buffer.unmap();
-
-        const index_buffer = core.device.createBuffer(&.{
-            .usage = .{ .index = true },
-            .size = @sizeOf(u32) * index_data.len,
-            .mapped_at_creation = .true,
-        });
-        const index_mapped = index_buffer.getMappedRange(u32, 0, index_data.len);
-        @memcpy(index_mapped.?, index_data[0..]);
-        index_buffer.unmap();
 
         const base_folder = try std.fs.realpathAlloc(allocator, "../../");
         defer allocator.free(base_folder);
@@ -303,7 +257,6 @@ pub const GameState = struct {
         self.pipeline_game_window = pipeline_game_window;
         self.pipeline_default_output = pipeline_default_output;
         self.vertex_buffer_default = vertex_buffer;
-        self.index_buffer_default = index_buffer;
         self.bind_group_default = bind_group_default;
         self.bind_group_game_window = bind_group_game_window;
         self.bind_group_default_output = bind_group_default_output;
@@ -461,19 +414,12 @@ pub const GameState = struct {
         var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue, Components.Tile, Components.Position }, .{}, .{});
 
         const SortDeckOrder = struct {
-            fn sort(_: void, a: Components.DeckOrder, b: Components.DeckOrder) bool {
+            fn sortPosition(_: void, a: Components.DeckOrder, b: Components.DeckOrder) bool {
                 return a.index > b.index;
             }
         };
 
-        // var group_iter = deck_order_group.iterator(struct { deck_order: *Components.DeckOrder, card_suit: *Components.CardSuit, card_value: *Components.CardValue});
-        // std.debug.print("Before sort\n", .{});
-        // while (group_iter.next()) |entity| {
-        //     std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
-        //     // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
-        // }
-
-        deck_order_group.sort(Components.DeckOrder, {}, SortDeckOrder.sort);
+        deck_order_group.sort(Components.DeckOrder, {}, SortDeckOrder.sortPosition);
         var group_iter_sorted = deck_order_group.iterator(struct { 
             deck_order: *Components.DeckOrder, 
             card_suit: *Components.CardSuit, 
@@ -514,7 +460,6 @@ pub const GameState = struct {
         self.pipeline_game_window.release();
         self.pipeline_default_output.release();
         self.vertex_buffer_default.release();
-        self.index_buffer_default.release();
 
         self.bind_group_default.release();
         self.bind_group_game_window.release();

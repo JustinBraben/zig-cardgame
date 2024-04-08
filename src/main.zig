@@ -100,6 +100,10 @@ pub fn deinit(app: *App) void {
     _ = app;
 }
 
+pub fn updateMainThread(_: *App) !bool {
+    return false;
+}
+
 pub fn update(app: *App) !bool {
     state.delta_time = app.timer.lap();
     state.game_time += state.delta_time;
