@@ -40,6 +40,10 @@ pub const DeckOrder = struct {
     index: usize = 0,
 };
 pub const IsShuffled = struct {};
+pub const Facing = enum {
+    Up,
+    Down,
+};
 
 pub const SpriteRenderer = sprites.SpriteRenderer;
 pub const SpriteAnimator = sprites.SpriteAnimator;
@@ -52,3 +56,7 @@ pub const Drag = struct {
 pub const Moveable = struct {};
 
 pub const Camera = struct {};
+
+pub const Stack = struct {
+    count: u8 = 1,
+};

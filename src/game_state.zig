@@ -283,6 +283,11 @@ pub const GameState = struct {
         // Create foundation piles
     }
 
+
+    // TODO: Remove, not really needed when using groups
+    // Just reset the whole world if you need to clear out entities
+    // Groups mess with how you can typically remove entities
+    // Also: Find out how to remove entities after they are added to a group
     pub fn clearDeck(self: *GameState) void {
         var view_deck = self.world.view(
             .{ 
