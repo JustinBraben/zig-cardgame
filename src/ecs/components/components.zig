@@ -1,5 +1,4 @@
 const std = @import("std");
-const zmath = @import("zmath");
 const game = @import("../../main.zig");
 const ecs = @import("zig-ecs");
 

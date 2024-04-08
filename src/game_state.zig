@@ -267,10 +267,10 @@ pub const GameState = struct {
     pub fn createSolitaire(self: *GameState) !void {
 
         // Clear deck of cards
-        clearDeck(self);
+        // clearDeck(self);
 
         // Generate deck of cards
-        try generateDeck(self);
+        try resetDeck(self);
 
         // Shuffle deck of cards
         try shuffleDeck(self);
@@ -302,7 +302,7 @@ pub const GameState = struct {
         }
     }
 
-    pub fn generateDeck(self: *GameState) !void {
+    pub fn resetDeck(self: *GameState) !void {
         
         const suits = [_]Components.CardSuit{ 
             Components.CardSuit.Diamonds,
@@ -342,9 +342,9 @@ pub const GameState = struct {
                 self.world.addOrReplace(entity, Components.DeckOrder{
                     .index = index,
                 });
-                self.world.addOrReplace(entity, Components.Tile{});
-                self.world.addOrReplace(entity, Components.Position{});
-                self.world.add(entity, Components.Moveable{}); // card is moveable
+                self.world.addTypes(entity, .{Components.Tile, Components.Position, Components.Moveable});
+                // self.world.addTypes(entity, Components.Position{});
+                // self.world.addTypes(entity, Components.Moveable{}); // card is moveable
                 // log.info("Creating {} of {} at deck order {}", .{value, suit, index});
                 index += 1;
             }

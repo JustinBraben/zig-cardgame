@@ -70,53 +70,21 @@ pub fn renderSprites(gamestate: *GameState) !void {
         .mvp = zmath.transpose(gamestate.camera.renderTextureMatrix()),
     };
 
-    {
-        try gamestate.batcher.begin(.{
-            .pipeline_handle = gamestate.pipeline_default,
-            .bind_group_handle = gamestate.bind_group_default,
-            .output_handle = gamestate.default_output.view_handle,
-        });
-        var view = gamestate.world.view(.{ Components.Position, Components.SpriteRenderer }, .{});
-        var iter = view.entityIterator();
-        while (iter.next()) |entity| {
-            const pos = view.getConst(Components.Position, entity);
-            const position = utils.toF32x4(pos);
-            const renderer = view.getConst(Components.SpriteRenderer, entity);
-            gamestate.batcher.sprite(
-                position, 
-                &gamestate.default_texture,
-                gamestate.atlas.sprites[renderer.index],
-                .{
-                    .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
-                    .rotation = 0.0,
-                    .flip_x = false,
-                    .flip_y = false,
-                },
-            ) catch unreachable;
-        }
-        try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
-    }
-
-    // {   // Draw sprites and order them by y position
-    //     // This draws in the correct order, but it crashes when recreating the solitaire game
+    // TODO: Remove this eventually
+    // Old way of rendering sprites without positioning based on render order
+    // {
     //     try gamestate.batcher.begin(.{
     //         .pipeline_handle = gamestate.pipeline_default,
     //         .bind_group_handle = gamestate.bind_group_default,
     //         .output_handle = gamestate.default_output.view_handle,
     //     });
-    //     var position_order_group = gamestate.world.group(.{}, .{ Components.Position, Components.SpriteRenderer }, .{});
-    //     const SortPositionContext = struct {
-    //         fn sort(_: void, a: Components.Position, b: Components.Position) bool {
-    //             return a.y < b.y;
-    //         }
-    //     };
-    //     position_order_group.sort(Components.Position, {}, SortPositionContext.sort);
-    //     var group_iter_sorted = position_order_group.iterator();
-    //     while (group_iter_sorted.next()) |entity| {
-    //         const pos = position_order_group.getConst(Components.Position, entity);
+    //     var view = gamestate.world.view(.{ Components.Position, Components.SpriteRenderer }, .{});
+    //     var iter = view.entityIterator();
+    //     while (iter.next()) |entity| {
+    //         const pos = view.getConst(Components.Position, entity);
     //         const position = utils.toF32x4(pos);
-    //         const renderer = position_order_group.getConst(Components.SpriteRenderer, entity);
-    //         try gamestate.batcher.sprite(
+    //         const renderer = view.getConst(Components.SpriteRenderer, entity);
+    //         gamestate.batcher.sprite(
     //             position, 
     //             &gamestate.default_texture,
     //             gamestate.atlas.sprites[renderer.index],
@@ -126,10 +94,43 @@ pub fn renderSprites(gamestate: *GameState) !void {
     //                 .flip_x = false,
     //                 .flip_y = false,
     //             },
-    //         );
+    //         ) catch unreachable;
     //     }
     //     try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
     // }
+
+    {   // Draw sprites and order them by y position
+        try gamestate.batcher.begin(.{
+            .pipeline_handle = gamestate.pipeline_default,
+            .bind_group_handle = gamestate.bind_group_default,
+            .output_handle = gamestate.default_output.view_handle,
+        });
+        var position_order_group = gamestate.world.group(.{}, .{ Components.Position, Components.SpriteRenderer }, .{});
+        const SortPositionContext = struct {
+            fn sort(_: void, a: Components.Position, b: Components.Position) bool {
+                return a.y < b.y;
+            }
+        };
+        position_order_group.sort(Components.Position, {}, SortPositionContext.sort);
+        var group_iter_sorted = position_order_group.iterator();
+        while (group_iter_sorted.next()) |entity| {
+            const pos = position_order_group.getConst(Components.Position, entity);
+            const position = utils.toF32x4(pos);
+            const renderer = position_order_group.getConst(Components.SpriteRenderer, entity);
+            try gamestate.batcher.sprite(
+                position, 
+                &gamestate.default_texture,
+                gamestate.atlas.sprites[renderer.index],
+                .{
+                    .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
+                    .rotation = 0.0,
+                    .flip_x = false,
+                    .flip_y = false,
+                },
+            );
+        }
+        try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
+    }
     
     // {
     //     try gamestate.batcher.begin(.{
