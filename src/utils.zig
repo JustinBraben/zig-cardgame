@@ -10,7 +10,9 @@ pub fn toF32x4(self: Components.Position) zmath.F32x4 {
 }
 
 pub fn positionWithinArea(needle: Components.Position, haystack: Components.Position) bool {
-    return (@abs((needle.x - haystack.x) / 2) <= game.settings.pixels_per_unit_x) and (@abs((needle.y - haystack.y) / 2) <= game.settings.pixels_per_unit_y);
+    const x_within = (needle.x >= haystack.x) and (needle.x < haystack.x + game.settings.pixels_per_unit_x);
+    const y_within = (needle.y >= (haystack.y - game.settings.pixels_per_unit_y)) and (needle.y < haystack.y);
+    return (x_within and y_within);
 }
 
 pub fn getTileCentre(self: Components.Tile) Components.Position {

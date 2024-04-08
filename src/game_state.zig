@@ -453,7 +453,7 @@ pub const GameState = struct {
             try deck_index_set.put(index_1, {});
             try deck_index_set.put(index_2, {});
 
-            log.info("index1: {d}, index2: {d}", .{index_1, index_2});
+            // log.info("index1: {d}, index2: {d}", .{index_1, index_2});
         }
     }
 
@@ -505,7 +505,7 @@ pub const GameState = struct {
                 y = 0;
             }
 
-            std.debug.print("Card at tile x: {}, y: {}, is {any} of {any}\n", .{entity.tile.*.x, entity.tile.*.y, entity.card_value.*, entity.card_suit.*});
+            // std.debug.print("Card at tile x: {}, y: {}, is {any} of {any}\n", .{entity.tile.*.x, entity.tile.*.y, entity.card_value.*, entity.card_suit.*});
         }
     }
 
