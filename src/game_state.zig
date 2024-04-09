@@ -308,6 +308,11 @@ pub const GameState = struct {
     }
 
     pub fn resetDeck(self: *GameState) !void {
+
+        // NOTE: Hack, resetting the registry for entities on deck reset
+        // TODO: Find a better way to reset the registry
+        self.world.deinit();
+        self.world.* = Registry.init(self.allocator);
         
         const suits = [_]Components.CardSuit{ 
             Components.CardSuit.Diamonds,

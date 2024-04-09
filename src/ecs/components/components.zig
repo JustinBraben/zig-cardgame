@@ -52,6 +52,7 @@ pub const Request = struct {};
 pub const Drag = struct {
     start: Position,
     end: Position,
+    offset: Position,
 };
 pub const Moveable = struct {};
 
