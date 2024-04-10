@@ -59,5 +59,5 @@ pub const Moveable = struct {};
 pub const Camera = struct {};
 
 pub const Stack = struct {
-    count: u8 = 1,
+    index: u8 = 1,
 };

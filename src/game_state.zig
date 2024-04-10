@@ -352,6 +352,9 @@ pub const GameState = struct {
                 self.world.addOrReplace(entity, Components.DeckOrder{
                     .index = index,
                 });
+                self.world.addOrReplace(entity, Components.Stack{
+                    .index = 0,
+                });
                 self.world.addTypes(entity, .{Components.Tile, Components.Position, Components.Moveable});
                 // self.world.addTypes(entity, Components.Position{});
                 // self.world.addTypes(entity, Components.Moveable{}); // card is moveable

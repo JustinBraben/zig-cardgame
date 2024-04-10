@@ -58,6 +58,7 @@ pub fn run(gamestate: *GameState) void {
                 pos.x = final_pos[0] - drag.offset.x;
                 pos.y = final_pos[1] - drag.offset.y;
                 gamestate.world.remove(Components.Drag, entity);
+                gamestate.world.addTypes(entity, .{Components.Request});
             }
         }
     }
