@@ -21,7 +21,7 @@ pub fn run(gamestate: *GameState) void {
     const tile_half_size = utils.getTileHalfSize();
 
     while (entity_with_request_Iter.next()) |entity_with_request| {
-        const position_e1 = view_with_request.getConst(Components.Position, entity_with_request);
+        var position_e1 = view_with_request.get(Components.Position, entity_with_request);
         const position_e1_with_offset: Components.Position = .{ .x = position_e1.x + tile_half_size[0], .y = position_e1.y - tile_half_size[1] };
         const card_suit_e1 = view_with_request.getConst(Components.CardSuit, entity_with_request);
         const card_value_e1 = view_with_request.getConst(Components.CardValue, entity_with_request);
@@ -31,6 +31,10 @@ pub fn run(gamestate: *GameState) void {
             const card_value_e2 = view_exclude_request.getConst(Components.CardValue, entity_without_request);
             if (utils.positionWithinArea(position_e1_with_offset, position_e2)){
                 std.debug.print("Found collision! Between {} of {} and {} of {}\n", .{card_value_e1, card_suit_e1, card_value_e2, card_suit_e2});
+
+                // Snaps entity_with_request to entity_without_request to make a stack
+                position_e1.x = position_e2.x;
+                position_e1.y = position_e2.y - tile_half_size[1];
             }
         }
     }
