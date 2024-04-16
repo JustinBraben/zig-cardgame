@@ -35,6 +35,15 @@ pub fn run(gamestate: *GameState) void {
                 // Snaps entity_with_request to entity_without_request to make a stack
                 position_e1.x = position_e2.x;
                 position_e1.y = position_e2.y - tile_half_size[1];
+
+                // TODO: check if the card is a valid move
+                // Make a helper function to return a boolean if the move is valid
+                if (isCardValidMove(card_suit_e1, card_value_e1, card_suit_e2, card_value_e2)) {
+                    std.debug.print("Valid move!\n", .{});
+                }
+                else {
+                    std.debug.print("Invalid move!\n", .{});
+                }
             }
         }
     }
@@ -45,4 +54,25 @@ pub fn run(gamestate: *GameState) void {
     while (entity_all_requests_Iter.next()) |entity_all_requests| {
         gamestate.world.remove(Components.Request, entity_all_requests);
     }
+}
+
+fn isCardValidMove(card_suit_e1: Components.CardSuit, card_value_e1: Components.CardValue, card_suit_e2: Components.CardSuit, card_value_e2: Components.CardValue) bool {
+    switch (card_suit_e1) {
+        .Clubs, .Spades => {
+            if (card_suit_e2 == .Hearts or card_suit_e2 == .Diamonds) {
+                if (@intFromEnum(card_value_e1) == @intFromEnum(card_value_e2) - 1) {
+                    return true;
+                }
+            }  
+        },
+        .Hearts, .Diamonds => {
+            if (card_suit_e2 == .Clubs or card_suit_e2 == .Spades) {
+                if (@intFromEnum(card_value_e1) == @intFromEnum(card_value_e2) - 1) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
