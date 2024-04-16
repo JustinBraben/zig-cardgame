@@ -13,6 +13,7 @@ pub fn run(gamestate: *GameState) void {
 
     if (gamestate.mouse.button(.primary)) |btn| {
         const initial_pos = btn.pressed_position;
+        const initial_pos_as_Position: Components.Position = .{ .x = initial_pos[0], .y = initial_pos[1]};
 
         if (btn.pressed()) {
             // std.debug.print("Mouse initial position pressed x : {}, y : {}\n", .{initial_pos[0], initial_pos[1]});
@@ -20,15 +21,33 @@ pub fn run(gamestate: *GameState) void {
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
                 const entity_pos = view.getConst(Components.Position, entity);
-                if (utils.positionWithinArea(.{ .x = initial_pos[0], .y = initial_pos[1]}, entity_pos)){
-                    // std.debug.print("Found card pressed at position x : {}, y : {}\n", .{entity_pos.x, entity_pos.y});
-                    const drag = Components.Drag{ 
-                        .start = .{ .x = initial_pos[0], .y = initial_pos[1]}, 
-                        .end = .{ .x = initial_pos[0], .y = initial_pos[1]},
-                        .offset = .{ .x = initial_pos[0] - entity_pos.x, .y = initial_pos[1] - entity_pos.y}
-                    };
-                    // std.debug.print("Offset x : {}, y : {}\n", .{drag.offset.x, drag.offset.y});
-                    gamestate.world.addOrReplace(entity, drag);
+
+                // Check to see if there are any cards at the position of the mouse click
+                if (utils.positionWithinArea(initial_pos_as_Position, entity_pos)){
+
+                    // TODO: Use stack component to determine what card to drag
+
+                    // TODO: Don't move the card below the stack (the higher stack index)
+                    if(isFrontCard(gamestate, entity_pos)) {
+                        
+                        std.debug.print("Found front card pressed at position x : {}, y : {}\n", .{entity_pos.x, entity_pos.y});
+                        const drag = Components.Drag{ 
+                            .start = .{ .x = initial_pos[0], .y = initial_pos[1]}, 
+                            .end = .{ .x = initial_pos[0], .y = initial_pos[1]},
+                            .offset = .{ .x = initial_pos[0] - entity_pos.x, .y = initial_pos[1] - entity_pos.y}
+                        };
+                        // std.debug.print("Offset x : {}, y : {}\n", .{drag.offset.x, drag.offset.y});
+                        gamestate.world.addOrReplace(entity, drag);
+                    }
+
+                    // // std.debug.print("Found card pressed at position x : {}, y : {}\n", .{entity_pos.x, entity_pos.y});
+                    // const drag = Components.Drag{ 
+                    //     .start = .{ .x = initial_pos[0], .y = initial_pos[1]}, 
+                    //     .end = .{ .x = initial_pos[0], .y = initial_pos[1]},
+                    //     .offset = .{ .x = initial_pos[0] - entity_pos.x, .y = initial_pos[1] - entity_pos.y}
+                    // };
+                    // // std.debug.print("Offset x : {}, y : {}\n", .{drag.offset.x, drag.offset.y});
+                    // gamestate.world.addOrReplace(entity, drag);
                 }
             }
         }
@@ -62,4 +81,63 @@ pub fn run(gamestate: *GameState) void {
             }
         }
     }
+}
+
+// TODO: Make helper function to only grab the forefront card of a stack
+// No cards behind the top card should be grabbed
+fn getFrontCard(gamestate: *GameState, pos: Components.Position) !Components.Position {
+    var position_list = std.ArrayList(Components.Position).init(gamestate.allocator);
+    defer position_list.deinit();
+
+    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+    var entityIter = view.entityIterator();
+    while (entityIter.next()) |entity| {
+        const entity_pos = view.getConst(Components.Position, entity);
+        if (utils.positionWithinArea(.{ .x = pos.x, .y = pos.y}, entity_pos)){
+            // return view.get(Components.Position, entity);
+            try position_list.append(view.get(Components.Position, entity));
+        }
+    }
+    
+    if (position_list.items.len == 0) {
+        return error.OutOfRange;
+    }
+
+    if (position_list.items.len == 1) {
+        return position_list.items[0];
+    }
+
+    var min_pos = position_list.items[0];
+    for (position_list.items) |value| {
+        const current_min_y = @min(min_pos.y, value.y);
+        if (current_min_y == value.y) {
+            min_pos = value;
+        }
+    }
+
+    return min_pos;
+}
+
+/// Returns true if the card is the front card of the stack
+/// TODO: Fix this function to only grab the front card of the stack
+fn isFrontCard(gamestate: *GameState, pos: Components.Position) bool {
+    var min_pos = pos;
+
+    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+    var entityIter = view.entityIterator();
+    while (entityIter.next()) |entity| {
+        const entity_pos = view.getConst(Components.Position, entity);
+        if (utils.positionWithinArea(.{ .x = pos.x, .y = pos.y}, entity_pos)){
+            const current_min_y = @min(min_pos.y, entity_pos.y);
+            if (current_min_y == entity_pos.y) {
+                min_pos.y = entity_pos.y;
+            }
+        }
+    }
+
+    if (min_pos.y == pos.y) {
+        return true;
+    }
+
+    return false;
 }

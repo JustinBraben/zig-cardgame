@@ -37,8 +37,8 @@ pub fn run(gamestate: *GameState) void {
                 position_e1.x = position_e2.x;
                 position_e1.y = position_e2.y - tile_half_size[1];
 
-                // TODO: check if the card is a valid move
-                // Make a helper function to return a boolean if the move is valid
+                // TODO: only change position if the move is valid
+                // Checks if the move is valid
                 if (isCardValidMove(card_suit_e1, card_value_e1, card_suit_e2, card_value_e2)) {
                     std.debug.print("Valid move!\n", .{});
                 }
