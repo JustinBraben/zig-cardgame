@@ -42,13 +42,15 @@ pub fn run(gamestate: *GameState) void {
                 // TODO: only change position if the move is valid
                 // Checks if the move is valid
                 if (isCardValidMove(card_suit_e1, card_value_e1, card_suit_e2, card_value_e2)) {
-                    std.debug.print("Valid move!\n", .{});
-
                     position_e1.x = position_e2.x;
                     position_e1.y = position_e2.y - tile_half_size[1];
-                    
+
                     stack_e2.index += 1;
                     stack_e1.index = stack_e2.index - 1;
+
+                    std.debug.print("Valid move!\n", .{});
+                    std.debug.print("Requested entity stack index : {}\n", .{stack_e1.index});
+                    std.debug.print("Collided entity stack index : {}\n", .{stack_e2.index});
                 }
                 else {
                     std.debug.print("Invalid move!\n", .{});

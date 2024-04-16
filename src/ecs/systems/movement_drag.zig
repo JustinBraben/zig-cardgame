@@ -18,10 +18,13 @@ pub fn run(gamestate: *GameState) void {
 
         if (btn.pressed()) {
             // std.debug.print("Mouse initial position pressed x : {}, y : {}\n", .{initial_pos[0], initial_pos[1]});
-            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue }, .{});
+            var valid_stack_position_x: f32 = 0;
+            var valid_stack_index: u8 = 0;
+            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
                 const entity_pos = view.getConst(Components.Position, entity);
+                const entity_stack = view.getConst(Components.Stack, entity);
 
                 // Check to see if there are any cards at the position of the mouse click
                 if (utils.positionWithinArea(initial_pos_as_Position, entity_pos)){
@@ -34,10 +37,27 @@ pub fn run(gamestate: *GameState) void {
                         };
                         // std.debug.print("Offset x : {}, y : {}\n", .{drag.offset.x, drag.offset.y});
                         gamestate.world.addOrReplace(entity, drag);
+                        valid_stack_position_x = entity_pos.x;
+                        valid_stack_index = entity_stack.index;
                     }
                 }
 
                 // TODO: Use stack component to determine what card to drag
+            }
+
+            var view_for_stack = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+            entityIter = view_for_stack.entityIterator();
+            while (entityIter.next()) |entity| {
+                const entity_pos = view.getConst(Components.Position, entity);
+                const entity_stack = view.getConst(Components.Stack, entity);
+                if (entity_pos.x == valid_stack_position_x and entity_stack.index < valid_stack_index) {
+                    const drag = Components.Drag{ 
+                        .start = .{ .x = initial_pos[0], .y = initial_pos[1]}, 
+                        .end = .{ .x = initial_pos[0], .y = initial_pos[1]},
+                        .offset = .{ .x = initial_pos[0] - entity_pos.x, .y = initial_pos[1] - entity_pos.y}
+                    };
+                    gamestate.world.addOrReplace(entity, drag);
+                }
             }
         }
 
@@ -45,7 +65,7 @@ pub fn run(gamestate: *GameState) void {
             const current_pos = gamestate.mouse.position;
             const current_world_pos = game.state.camera.screenToWorld(zmath.f32x4(current_pos[0], current_pos[1], 0, 0));
 
-            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Drag }, .{});
+            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Drag, Components.Stack }, .{});
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
                 var drag = view.get(Components.Drag, entity);
@@ -58,7 +78,7 @@ pub fn run(gamestate: *GameState) void {
 
         if (btn.released()) {
             const final_pos = btn.released_position;
-            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Drag }, .{});
+            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Drag, Components.Stack }, .{});
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
                 const drag = view.getConst(Components.Drag, entity);
