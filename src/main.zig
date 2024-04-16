@@ -28,6 +28,7 @@ test {
     _ = @import("utils.zig");
     _ = @import("input/Hotkeys.zig");
     _ = @import("input/Mouse.zig");
+    _ = @import("ecs/systems/stack.zig");
 }
 
 pub const App = @This();

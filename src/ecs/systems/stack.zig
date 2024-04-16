@@ -1,5 +1,6 @@
 const std = @import("std");
 const assert = std.debug.assert;
+const testing = std.testing;
 const zmath = @import("zmath");
 const GameState = @import("../../game_state.zig").GameState;
 const game = @import("../../main.zig");
@@ -75,4 +76,22 @@ fn isCardValidMove(card_suit_e1: Components.CardSuit, card_value_e1: Components.
     }
 
     return false;
+}
+test "Testing isCardValidMove" {
+    try testing.expect(isCardValidMove(.Clubs, .Queen, .Hearts, .King));
+    try testing.expect(isCardValidMove(.Clubs, .Three, .Diamonds, .Four));
+    try testing.expect(isCardValidMove(.Hearts, .Six, .Spades, .Seven));
+    try testing.expect(isCardValidMove(.Hearts, .Ten, .Clubs, .Jack));
+
+    try testing.expect(isCardValidMove(.Spades, .Queen, .Hearts, .King));
+    try testing.expect(isCardValidMove(.Spades, .Three, .Diamonds, .Four));
+    try testing.expect(isCardValidMove(.Diamonds, .Six, .Spades, .Seven));
+    try testing.expect(isCardValidMove(.Diamonds, .Ten, .Clubs, .Jack));
+
+    // These are expected to fail
+    try testing.expect(!isCardValidMove(.Clubs, .Queen, .Hearts, .Queen));
+    try testing.expect(!isCardValidMove(.Clubs, .Three, .Clubs, .Two));
+    try testing.expect(!isCardValidMove(.Hearts, .Six, .Hearts, .Five));
+    try testing.expect(!isCardValidMove(.Hearts, .Ten, .Hearts, .Nine));
+    try testing.expect(!isCardValidMove(.Clubs, .Three, .Diamonds, .Three));
 }
