@@ -104,4 +104,6 @@ test "Testing isCardValidMove" {
     try testing.expect(!isCardValidMove(.Hearts, .Six, .Hearts, .Five));
     try testing.expect(!isCardValidMove(.Hearts, .Ten, .Hearts, .Nine));
     try testing.expect(!isCardValidMove(.Clubs, .Three, .Diamonds, .Three));
+
+    try testing.expect(!isCardValidMove(.Spades, .Queen, .Hearts, .Queen));
 }
