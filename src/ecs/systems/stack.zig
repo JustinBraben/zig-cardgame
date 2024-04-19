@@ -21,6 +21,11 @@ pub fn run(gamestate: *GameState) void {
 
     const tile_half_size = utils.getTileHalfSize();
 
+    var last_moved_entity_pos: ?Components.Position = null;
+    var last_moved_entity_card_suit: ?Components.CardSuit = null;
+    var last_moved_entity_card_value: ?Components.CardValue = null;
+    var last_moved_entity_card_stack: ?Components.Stack = null;
+
     while (entity_with_request_Iter.next()) |entity_with_request| {
         var position_e1 = view_with_request.get(Components.Position, entity_with_request);
         var stack_e1 = view_with_request.get(Components.Stack, entity_with_request);
@@ -29,12 +34,12 @@ pub fn run(gamestate: *GameState) void {
         const card_value_e1 = view_with_request.getConst(Components.CardValue, entity_with_request);
         while(entity_exclude_request_Iter.next()) |entity_without_request| {
             const position_e2 = view_exclude_request.getConst(Components.Position, entity_without_request);
-            var stack_e2 = view_exclude_request.get(Components.Stack, entity_without_request);
+            const stack_e2 = view_exclude_request.getConst(Components.Stack, entity_without_request);
             const card_suit_e2 = view_exclude_request.getConst(Components.CardSuit, entity_without_request);
             const card_value_e2 = view_exclude_request.getConst(Components.CardValue, entity_without_request);
             if (utils.positionWithinArea(position_e1_with_offset, position_e2)){
                 std.debug.print("Found collision! Between {} of {} and {} of {}\n", .{card_value_e1, card_suit_e1, card_value_e2, card_suit_e2});
-
+                std.debug.print("All cards requested should snap below sequentially\n", .{});
                 // Snaps entity_with_request to entity_without_request to make a stack
                 // position_e1.x = position_e2.x;
                 // position_e1.y = position_e2.y - tile_half_size[1];
@@ -45,12 +50,21 @@ pub fn run(gamestate: *GameState) void {
                     position_e1.x = position_e2.x;
                     position_e1.y = position_e2.y - tile_half_size[1];
 
-                    stack_e2.index += 1;
-                    stack_e1.index = stack_e2.index - 1;
+
+                    stack_e1.index = stack_e2.index + 1;
+                    // stack_e2.index += 1;
+                    // stack_e1.index = stack_e2.index - 1;
 
                     std.debug.print("Valid move!\n", .{});
                     std.debug.print("Requested entity stack index : {}\n", .{stack_e1.index});
                     std.debug.print("Collided entity stack index : {}\n", .{stack_e2.index});
+
+                    last_moved_entity_pos = .{ .x = position_e1.x, .y = position_e1.y };
+                    last_moved_entity_card_suit = card_suit_e1;
+                    last_moved_entity_card_value = card_value_e1;
+                    last_moved_entity_card_stack = stack_e1.*;
+
+                    gamestate.world.remove(Components.Request, entity_with_request);
                 }
                 else {
                     std.debug.print("Invalid move!\n", .{});
@@ -58,6 +72,40 @@ pub fn run(gamestate: *GameState) void {
             }
         }
     }
+
+    // // TODO: make this work
+    // // Next we need to update the position of all the cards below the one that just moved
+    // // Keep looping until no more cards with request are found
+    // var request_found = true;
+    // if (last_moved_entity_pos == null or last_moved_entity_card_suit == null or last_moved_entity_card_value == null or last_moved_entity_card_stack == null) {
+    //     request_found = false;
+    // }
+
+    // while(request_found) {
+    //     var view_all_requests = gamestate.world.view(.{Components.Stack, Components.Request, Components.CardSuit, Components.CardValue, Components.Position}, .{});
+    //     var entity_all_requests_Iter = view_all_requests.entityIterator();
+
+    //     var count: usize = 0;
+    //     while (entity_all_requests_Iter.next()) |entity_all_requests| {
+    //         var position_e1 = view_with_request.get(Components.Position, entity_all_requests);
+    //         var stack_e1 = view_with_request.get(Components.Stack, entity_all_requests);
+    //         const card_suit_e1 = view_with_request.getConst(Components.CardSuit, entity_all_requests);
+    //         const card_value_e1 = view_with_request.getConst(Components.CardValue, entity_all_requests);
+            
+    //         if (isCardValidMove(last_moved_entity_card_suit.?, last_moved_entity_card_value.?, card_suit_e1, card_value_e1)) {
+    //             position_e1.x = last_moved_entity_pos.?.x;
+    //             position_e1.y = last_moved_entity_pos.?.y - tile_half_size[1];
+
+    //             stack_e1.index = last_moved_entity_card_stack.?.index + 1;
+    //             gamestate.world.remove(Components.Request, entity_all_requests);
+    //         }
+    //         count += 1;
+    //     }
+        
+    //     if (count == 0) {
+    //         request_found = false;
+    //     }
+    // }
 
     // After going through the top block, we need to delete request component from all entities.
     var view_all_requests = gamestate.world.view(.{Components.Request}, .{});

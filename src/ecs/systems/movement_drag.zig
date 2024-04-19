@@ -50,7 +50,7 @@ pub fn run(gamestate: *GameState) void {
             while (entityIter.next()) |entity| {
                 const entity_pos = view.getConst(Components.Position, entity);
                 const entity_stack = view.getConst(Components.Stack, entity);
-                if (entity_pos.x == valid_stack_position_x and entity_stack.index < valid_stack_index) {
+                if (entity_pos.x == valid_stack_position_x and entity_stack.index > valid_stack_index) {
                     const drag = Components.Drag{ 
                         .start = .{ .x = initial_pos[0], .y = initial_pos[1]}, 
                         .end = .{ .x = initial_pos[0], .y = initial_pos[1]},
@@ -87,6 +87,7 @@ pub fn run(gamestate: *GameState) void {
                 pos.y = final_pos[1] - drag.offset.y;
                 gamestate.world.remove(Components.Drag, entity);
                 gamestate.world.addTypes(entity, .{Components.Request});
+                std.debug.print("Made request!\n", .{});
             }
         }
     }
