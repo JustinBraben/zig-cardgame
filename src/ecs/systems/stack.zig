@@ -73,39 +73,49 @@ pub fn run(gamestate: *GameState) void {
         }
     }
 
-    // // TODO: make this work
-    // // Next we need to update the position of all the cards below the one that just moved
-    // // Keep looping until no more cards with request are found
-    // var request_found = true;
-    // if (last_moved_entity_pos == null or last_moved_entity_card_suit == null or last_moved_entity_card_value == null or last_moved_entity_card_stack == null) {
-    //     request_found = false;
-    // }
+    // Next we need to update the position of all the cards below the one that just moved
+    // Keep looping until no more cards with request are found
+    var request_found = true;
+    if (last_moved_entity_pos == null or last_moved_entity_card_suit == null or last_moved_entity_card_value == null or last_moved_entity_card_stack == null) {
+        request_found = false;
+    }
+    else {
+        std.debug.print("Last moved card is {s} of {s}\n", .{@tagName(last_moved_entity_card_value.?), @tagName(last_moved_entity_card_suit.?)});
+    }
 
-    // while(request_found) {
-    //     var view_all_requests = gamestate.world.view(.{Components.Stack, Components.Request, Components.CardSuit, Components.CardValue, Components.Position}, .{});
-    //     var entity_all_requests_Iter = view_all_requests.entityIterator();
+    while(request_found) {
+        var view_all_requests = gamestate.world.view(.{Components.Stack, Components.Request, Components.CardSuit, Components.CardValue, Components.Position}, .{});
+        var entity_all_requests_Iter = view_all_requests.entityIterator();
 
-    //     var count: usize = 0;
-    //     while (entity_all_requests_Iter.next()) |entity_all_requests| {
-    //         var position_e1 = view_with_request.get(Components.Position, entity_all_requests);
-    //         var stack_e1 = view_with_request.get(Components.Stack, entity_all_requests);
-    //         const card_suit_e1 = view_with_request.getConst(Components.CardSuit, entity_all_requests);
-    //         const card_value_e1 = view_with_request.getConst(Components.CardValue, entity_all_requests);
+        var count: usize = 0;
+        while (entity_all_requests_Iter.next()) |entity_all_requests| {
+            var position_e1 = view_with_request.get(Components.Position, entity_all_requests);
+            var stack_e1 = view_with_request.get(Components.Stack, entity_all_requests);
+            const card_suit_e1 = view_with_request.getConst(Components.CardSuit, entity_all_requests);
+            const card_value_e1 = view_with_request.getConst(Components.CardValue, entity_all_requests);
             
-    //         if (isCardValidMove(last_moved_entity_card_suit.?, last_moved_entity_card_value.?, card_suit_e1, card_value_e1)) {
-    //             position_e1.x = last_moved_entity_pos.?.x;
-    //             position_e1.y = last_moved_entity_pos.?.y - tile_half_size[1];
+            if (isCardValidMove(card_suit_e1, card_value_e1, last_moved_entity_card_suit.?, last_moved_entity_card_value.?)) {
+                position_e1.x = last_moved_entity_pos.?.x;
+                position_e1.y = last_moved_entity_pos.?.y - tile_half_size[1];
 
-    //             stack_e1.index = last_moved_entity_card_stack.?.index + 1;
-    //             gamestate.world.remove(Components.Request, entity_all_requests);
-    //         }
-    //         count += 1;
-    //     }
+                stack_e1.index = last_moved_entity_card_stack.?.index + 1;
+
+                last_moved_entity_pos = .{ .x = position_e1.x, .y = position_e1.y };
+                last_moved_entity_card_suit = card_suit_e1;
+                last_moved_entity_card_value = card_value_e1;
+                last_moved_entity_card_stack = stack_e1.*;
+
+                std.debug.print("Moving card below the last moved\n", .{});
+                gamestate.world.remove(Components.Request, entity_all_requests);
+            }
+            count += 1;
+        }
         
-    //     if (count == 0) {
-    //         request_found = false;
-    //     }
-    // }
+        // Out of entities with requests, or the loop is wrong breakout
+        if (count == 0 or count > 52) {
+            request_found = false;
+        }
+    }
 
     // After going through the top block, we need to delete request component from all entities.
     var view_all_requests = gamestate.world.view(.{Components.Request}, .{});
