@@ -61,3 +61,5 @@ pub const Camera = struct {};
 pub const Stack = struct {
     index: u8 = 0,
 };
+
+pub const Foundation = struct {};

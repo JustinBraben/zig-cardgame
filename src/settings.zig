@@ -35,6 +35,12 @@ pub const pixels_per_unit_x: f32 = 44.0;
 /// The number of pixels per tile in height for cards
 pub const pixels_per_unit_y: f32 = 64.0;
 
+/// The number of pixels to space out tiles in width
+pub const pixel_spacing_x: f32 = 10.0;
+
+/// The number of pixels to space out tiles in height
+pub const pixel_spacing_y: f32 = 20.0;
+
 /// The seconds it takes for a move to be completed from one tile to another.
 // TODO: Embed this in character stats.
 pub const movement_cooldown: f32 = 0.38;

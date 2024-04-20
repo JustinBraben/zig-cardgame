@@ -88,6 +88,7 @@ pub fn run(gamestate: *GameState) void {
                 gamestate.world.remove(Components.Drag, entity);
                 gamestate.world.addTypes(entity, .{Components.Request});
                 std.debug.print("Made request!\n", .{});
+                std.debug.print("Position x : {}, y : {}\n", .{pos.x, pos.y});
             }
         }
     }

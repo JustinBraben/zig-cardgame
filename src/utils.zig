@@ -22,6 +22,13 @@ pub fn getTileCentre(self: Components.Tile) Components.Position {
     };
 }
 
+pub fn getTileFullSize() [2]f32 {
+    return .{
+        game.settings.pixels_per_unit_x,
+        game.settings.pixels_per_unit_y,
+    };
+}
+
 pub fn getTileHalfSize() [2]f32 {
     return .{
         (game.settings.pixels_per_unit_x / 2.0),

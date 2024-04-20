@@ -275,12 +275,13 @@ pub const GameState = struct {
         // Shuffle deck of cards
         try shuffleDeck(self);
 
+        // Create foundation piles
+        createFoundationPiles(self);
+
         // Position deck of cards
         positionDeck(self);
 
         // Deal cards to table
-        
-        // Create foundation piles
     }
 
 
@@ -346,6 +347,7 @@ pub const GameState = struct {
                 const entity = self.world.create();
                 self.world.addOrReplace(entity, suit);
                 self.world.addOrReplace(entity, value);
+                self.world.addOrReplace(entity, Components.Facing.Down);
                 self.world.addOrReplace(entity, Components.SpriteRenderer{
                     .index = index,
                 });
@@ -424,7 +426,7 @@ pub const GameState = struct {
     }
 
     pub fn positionDeck(self: *GameState) void {
-        var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue, Components.Tile, Components.Position }, .{}, .{});
+        var deck_order_group = self.world.group(.{ Components.DeckOrder, Components.CardSuit, Components.CardValue, Components.Tile, Components.Position, Components.Facing }, .{}, .{});
 
         const SortDeckOrder = struct {
             fn sortPosition(_: void, a: Components.DeckOrder, b: Components.DeckOrder) bool {
@@ -438,33 +440,95 @@ pub const GameState = struct {
             card_suit: *Components.CardSuit, 
             card_value: *Components.CardValue, 
             tile: *Components.Tile, 
-            pos: *Components.Position
+            pos: *Components.Position,
+            facing: *Components.Facing
             }
         );
         var x: i32 = 0;
         var y: i32 = 0;
+        // while (group_iter_sorted.next()) |entity| {
+        //     // std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
+        //     // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
+
+        //     entity.tile.*.x = x;
+        //     entity.tile.*.y = y;
+
+        //     const tile_to_position = utils.tileToPixelCoords(entity.tile.*);
+        //     entity.pos.*.x = tile_to_position.x;
+        //     entity.pos.*.y = tile_to_position.y;
+
+        //     x += 1;
+
+        //     if (x > 12) {
+        //         x = 0;
+        //         y += 1;
+        //     }
+        //     if (y > 3) {
+        //         y = 0;
+        //     }
+
+        //     // std.debug.print("Card at tile x: {}, y: {}, is {any} of {any}\n", .{entity.tile.*.x, entity.tile.*.y, entity.card_value.*, entity.card_suit.*});
+        // }
+
         while (group_iter_sorted.next()) |entity| {
-            // std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
-            // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
-
             entity.tile.*.x = x;
-            entity.tile.*.y = y;
+            entity.tile.*.y = (y * -1) + 3;
 
+            // TODO: Make this a function? Magic numbers used same as in createFoundationPiles
             const tile_to_position = utils.tileToPixelCoords(entity.tile.*);
-            entity.pos.*.x = tile_to_position.x;
-            entity.pos.*.y = tile_to_position.y;
+            entity.pos.*.x = (tile_to_position.x + (settings.pixel_spacing_x * @as(f32, @floatFromInt(entity.tile.*.x)))) - 200.0;
+            entity.pos.*.y = tile_to_position.y - (utils.getTileHalfSize()[1] * @as(f32, @floatFromInt(entity.tile.*.y)));
 
-            x += 1;
+            // Here put the rest of the cards into the face down pile
+            // if (x > 6) {
 
-            if (x > 12) {
-                x = 0;
-                y += 1;
-            }
-            if (y > 3) {
+            // }
+            
+            // 
+            if (y + 1 > x) {
+                x += 1;
                 y = 0;
+                // TODO: make this card face up
+                entity.facing.* = Components.Facing.Up;
+            } else {
+                y += 1;
             }
 
             // std.debug.print("Card at tile x: {}, y: {}, is {any} of {any}\n", .{entity.tile.*.x, entity.tile.*.y, entity.card_value.*, entity.card_suit.*});
+        }
+    }
+
+    pub fn createFoundationPiles(self: *GameState) void {
+        // var foundation_pile_count: usize = 0;
+        var foundation_pile_x: i32 = 3;
+        const foundation_pile_y: i32 = 1;
+
+        while (foundation_pile_x < 7) {
+            const entity = self.world.create();
+
+            const tile = Components.Tile{
+                .x = foundation_pile_x,
+                .y = foundation_pile_y,
+            };
+            self.world.addOrReplace(entity, tile);
+
+            // TODO: Make this a function? Magic numbers used same as in positionDeck
+            var pos = utils.tileToPixelCoords(tile);
+            pos.x = (pos.x + (settings.pixel_spacing_x * @as(f32, @floatFromInt(tile.x)))) - 200.0;
+            pos.y = pos.y + (utils.getTileFullSize()[1] * @as(f32, @floatFromInt(tile.y)) * 2.0);
+
+            self.world.addOrReplace(entity, pos);
+            
+            // 53 is index of the back of the card
+            self.world.addOrReplace(entity, Components.SpriteRenderer{
+                .index = 53,
+            });
+
+            self.world.addTypes(entity, .{Components.Foundation});
+
+            foundation_pile_x += 1;
+            // foundation_pile_x = @as(i32, @intCast(foundation_pile_count)) + 3;
+            // foundation_pile_count += 1;
         }
     }
 

@@ -71,6 +71,8 @@ pub fn run(gamestate: *GameState) void {
                 }
             }
         }
+
+        // TODO: Make a loop for foundation piles
     }
 
     // Next we need to update the position of all the cards below the one that just moved
@@ -164,4 +166,8 @@ test "Testing isCardValidMove" {
     try testing.expect(!isCardValidMove(.Clubs, .Three, .Diamonds, .Three));
 
     try testing.expect(!isCardValidMove(.Spades, .Queen, .Hearts, .Queen));
+}
+
+fn isValidFoundationCardMove(card_suit_e1: Components.CardSuit, card_value_e1: Components.CardValue, card_suit_e2: Components.CardSuit, card_value_e2: Components.CardValue) bool {
+    return false;
 }
