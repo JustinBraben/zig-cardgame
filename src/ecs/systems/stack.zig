@@ -169,5 +169,9 @@ test "Testing isCardValidMove" {
 }
 
 fn isValidFoundationCardMove(card_suit_e1: Components.CardSuit, card_value_e1: Components.CardValue, card_suit_e2: Components.CardSuit, card_value_e2: Components.CardValue) bool {
+    _ = card_suit_e1;
+    _ = card_value_e1;
+    _ = card_suit_e2;
+    _ = card_value_e2;
     return false;
 }
