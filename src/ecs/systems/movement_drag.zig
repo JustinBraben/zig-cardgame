@@ -20,7 +20,7 @@ pub fn run(gamestate: *GameState) void {
             // std.debug.print("Mouse initial position pressed x : {}, y : {}\n", .{initial_pos[0], initial_pos[1]});
             var valid_stack_position_x: f32 = 0;
             var valid_stack_index: u8 = 0;
-            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+            var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack, Components.Moveable }, .{});
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
                 const entity_pos = view.getConst(Components.Position, entity);
@@ -45,7 +45,7 @@ pub fn run(gamestate: *GameState) void {
                 // TODO: Use stack component to determine what card to drag
             }
 
-            var view_for_stack = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+            var view_for_stack = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack, Components.Moveable }, .{});
             entityIter = view_for_stack.entityIterator();
             while (entityIter.next()) |entity| {
                 const entity_pos = view.getConst(Components.Position, entity);

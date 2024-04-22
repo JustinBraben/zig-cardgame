@@ -358,6 +358,7 @@ pub const GameState = struct {
                     .index = 0,
                 });
                 self.world.addTypes(entity, .{Components.Tile, Components.Position, Components.Moveable});
+                // self.world.addTypes(entity, .{ Components.Tile, Components.Position });
                 // self.world.addTypes(entity, Components.Position{});
                 // self.world.addTypes(entity, Components.Moveable{}); // card is moveable
                 // log.info("Creating {} of {} at deck order {}", .{value, suit, index});
@@ -479,6 +480,9 @@ pub const GameState = struct {
             entity.pos.*.x = (tile_to_position.x + (settings.pixel_spacing_x * @as(f32, @floatFromInt(entity.tile.*.x)))) - 200.0;
             entity.pos.*.y = tile_to_position.y - (utils.getTileHalfSize()[1] * @as(f32, @floatFromInt(entity.tile.*.y)));
 
+            // if (x == y) {
+            //     self.world.addTypes(entity, .{ Components.Moveable }); // card is moveable
+            // }
             // Here put the rest of the cards into the face down pile
             // if (x > 6) {
 
