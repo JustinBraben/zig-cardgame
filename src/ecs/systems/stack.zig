@@ -13,10 +13,12 @@ const utils = @import("../../utils.zig");
 /// It will then look for other entities excluding a `Components.Stack` and `Components.Position` component.
 /// It will then check if the stack is being dragged over any of the entities without a `Components.Stack` and `Components.Position` component.
 pub fn run(gamestate: *GameState) void {
+    // Requirements for request entities
     var view_with_request = gamestate.world.view(.{ Components.Stack, Components.Request, Components.CardSuit, Components.CardValue, Components.Position, Components.Drag }, .{});
     var entity_with_request_Iter = view_with_request.entityIterator();
 
-    var view_exclude_request = gamestate.world.view(.{ Components.Stack, Components.CardSuit, Components.CardValue, Components.Position}, .{Components.Request});
+    // Requirements for entities without request
+    var view_exclude_request = gamestate.world.view(.{ Components.Stack, Components.CardSuit, Components.CardValue, Components.Position, Components.Moveable}, .{Components.Request});
     var entity_exclude_request_Iter = view_exclude_request.entityIterator();
 
     const tile_half_size = utils.getTileHalfSize();

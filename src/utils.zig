@@ -152,3 +152,20 @@ pub fn isFrontCard(gamestate: *GameState, pos: Components.Position, entity_pos_t
 pub fn positionsEqual(a: Components.Position, b: Components.Position) bool {
     return a.x == b.x and a.y == b.y;
 }
+
+pub fn lowestPositionInPile(gamestate: *GameState, pos: Components.Position) Components.Position {
+    var min_pos: Components.Position = .{ .x = pos.x, .y = std.math.floatMax(f32) };
+    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+    var entityIter = view.entityIterator();
+    while (entityIter.next()) |entity| {
+        const entity_pos = view.getConst(Components.Position, entity);
+        if (entity_pos.x == pos.x) {
+            min_pos.y = @min(min_pos.y, entity_pos.y);
+        }
+        // if (positionWithinArea(.{ .x = pos.x, .y = pos.y}, entity_pos)){
+        //     min_pos.y = @min(min_pos.y, entity_pos.y);
+        // }
+    }
+
+    return min_pos;
+}
