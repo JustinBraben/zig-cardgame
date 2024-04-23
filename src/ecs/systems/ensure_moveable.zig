@@ -9,7 +9,7 @@ const Components = @import("../components/components.zig");
 const utils = @import("../../utils.zig");
 const settings = @import("../../settings.zig");
 
-pub fn run(gamestate: *GameState) !void {
+pub fn run(gamestate: *GameState) void {
     
     var view_cards_request = gamestate.world.view(.{ Components.Stack, Components.CardSuit, Components.CardValue, Components.Position, Components.Tile, Components.Request }, .{});
     var entity_cards_request_Iter = view_cards_request.entityIterator();

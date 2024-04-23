@@ -63,3 +63,4 @@ pub const Stack = struct {
 };
 
 pub const Foundation = struct {};
+pub const OpenPile = struct {}; 
