@@ -3,6 +3,7 @@ pub const testing = std.testing;
 pub const Components = @import("ecs/components/components.zig");
 pub const settings = @import("settings.zig");
 const game = @import("main.zig");
+const GameState = @import("game_state.zig").GameState;
 const zmath = @import("zmath");
 
 pub fn toF32x4(self: Components.Position) zmath.F32x4 {
@@ -127,4 +128,27 @@ test "Pixel position to Tile position" {
 
 pub fn lerp(a: f32, b: f32, t: f32) f32 {
     return a + (b - a) * t;
+}
+
+/// Returns true if the card is the front card of the stack
+pub fn isFrontCard(gamestate: *GameState, pos: Components.Position, entity_pos_to_check: Components.Position) bool {
+    var min_pos: Components.Position = .{ .x = std.math.floatMax(f32), .y = std.math.floatMax(f32) };
+    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+    var entityIter = view.entityIterator();
+    while (entityIter.next()) |entity| {
+        const entity_pos = view.getConst(Components.Position, entity);
+        if (positionWithinArea(.{ .x = pos.x, .y = pos.y}, entity_pos)){
+            min_pos.y = @min(min_pos.y, entity_pos.y);
+        }
+    }
+
+    if (min_pos.y == entity_pos_to_check.y) {
+        return true;
+    }
+
+    return false;
+}
+
+pub fn positionsEqual(a: Components.Position, b: Components.Position) bool {
+    return a.x == b.x and a.y == b.y;
 }

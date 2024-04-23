@@ -13,7 +13,7 @@ const utils = @import("../../utils.zig");
 /// It will then look for other entities excluding a `Components.Stack` and `Components.Position` component.
 /// It will then check if the stack is being dragged over any of the entities without a `Components.Stack` and `Components.Position` component.
 pub fn run(gamestate: *GameState) void {
-    var view_with_request = gamestate.world.view(.{ Components.Stack, Components.Request, Components.CardSuit, Components.CardValue, Components.Position}, .{});
+    var view_with_request = gamestate.world.view(.{ Components.Stack, Components.Request, Components.CardSuit, Components.CardValue, Components.Position, Components.Drag }, .{});
     var entity_with_request_Iter = view_with_request.entityIterator();
 
     var view_exclude_request = gamestate.world.view(.{ Components.Stack, Components.CardSuit, Components.CardValue, Components.Position}, .{Components.Request});
@@ -26,9 +26,12 @@ pub fn run(gamestate: *GameState) void {
     var last_moved_entity_card_value: ?Components.CardValue = null;
     var last_moved_entity_card_stack: ?Components.Stack = null;
 
+    var at_least_one_collision = false;
+
     while (entity_with_request_Iter.next()) |entity_with_request| {
         var position_e1 = view_with_request.get(Components.Position, entity_with_request);
         var stack_e1 = view_with_request.get(Components.Stack, entity_with_request);
+        // const drag_e1 = view_with_request.getConst(Components.Drag, entity_with_request);
         const position_e1_with_offset: Components.Position = .{ .x = position_e1.x + tile_half_size[0], .y = position_e1.y - tile_half_size[1] };
         const card_suit_e1 = view_with_request.getConst(Components.CardSuit, entity_with_request);
         const card_value_e1 = view_with_request.getConst(Components.CardValue, entity_with_request);
@@ -64,15 +67,38 @@ pub fn run(gamestate: *GameState) void {
                     last_moved_entity_card_value = card_value_e1;
                     last_moved_entity_card_stack = stack_e1.*;
 
-                    gamestate.world.remove(Components.Request, entity_with_request);
+                    gamestate.world.removeIfExists(Components.Request, entity_with_request);
+                    gamestate.world.removeIfExists(Components.Drag, entity_with_request);
+
+                    at_least_one_collision = true;
                 }
                 else {
+                    // position_e1.x = drag_e1.start.x;
+                    // position_e1.y = drag_e1.start.y;
                     std.debug.print("Invalid move!\n", .{});
+                    // gamestate.world.removeIfExists(Components.Request, entity_with_request);
+                    // gamestate.world.removeIfExists(Components.Drag, entity_with_request);
                 }
             }
         }
 
         // TODO: Make a loop for foundation piles
+    }
+
+    // If no collisions were found, set the position of each entity with request to the drag start position
+    if (!at_least_one_collision) {
+        entity_with_request_Iter = view_with_request.entityIterator();
+        while (entity_with_request_Iter.next()) |entity_with_request| {
+            var position_e1 = view_with_request.get(Components.Position, entity_with_request);
+            const drag_e1 = view_with_request.getConst(Components.Drag, entity_with_request);
+            // const position_e1_with_offset: Components.Position = .{ .x = position_e1.x + tile_half_size[0], .y = position_e1.y - tile_half_size[1] };
+
+            position_e1.x = drag_e1.start.x - drag_e1.offset.x;
+            position_e1.y = drag_e1.start.y - drag_e1.offset.y;
+
+            gamestate.world.removeIfExists(Components.Request, entity_with_request);
+            gamestate.world.removeIfExists(Components.Drag, entity_with_request);
+        }
     }
 
     // Next we need to update the position of all the cards below the one that just moved
@@ -108,7 +134,8 @@ pub fn run(gamestate: *GameState) void {
                 last_moved_entity_card_stack = stack_e1.*;
 
                 std.debug.print("Moving card below the last moved\n", .{});
-                gamestate.world.remove(Components.Request, entity_all_requests);
+                gamestate.world.removeIfExists(Components.Request, entity_all_requests);
+                gamestate.world.removeIfExists(Components.Drag, entity_all_requests);
             }
             count += 1;
         }
@@ -125,6 +152,12 @@ pub fn run(gamestate: *GameState) void {
     while (entity_all_requests_Iter.next()) |entity_all_requests| {
         gamestate.world.remove(Components.Request, entity_all_requests);
     }
+
+    // var view_all_drags = gamestate.world.view(.{Components.Drag}, .{});
+    // var entity_all_drags_Iter = view_all_drags.entityIterator();
+    // while (entity_all_drags_Iter.next()) |entity_all_drags| {
+    //     gamestate.world.remove(Components.Drag, entity_all_drags);
+    // }
 }
 
 fn isCardValidMove(card_suit_e1: Components.CardSuit, card_value_e1: Components.CardValue, card_suit_e2: Components.CardSuit, card_value_e2: Components.CardValue) bool {

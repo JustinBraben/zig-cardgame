@@ -28,7 +28,7 @@ pub fn run(gamestate: *GameState) void {
 
                 // Check to see if there are any cards at the position of the mouse click
                 if (utils.positionWithinArea(initial_pos_as_Position, entity_pos)){
-                    if(isFrontCard(gamestate, initial_pos_as_Position, entity_pos)) {
+                    if(utils.isFrontCard(gamestate, initial_pos_as_Position, entity_pos)) {
                         // std.debug.print("Found front card pressed at position x : {}, y : {}\n", .{entity_pos.x, entity_pos.y});
                         const drag = Components.Drag{ 
                             .start = .{ .x = initial_pos[0], .y = initial_pos[1]}, 
@@ -81,11 +81,14 @@ pub fn run(gamestate: *GameState) void {
             var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Drag, Components.Stack }, .{});
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
-                const drag = view.getConst(Components.Drag, entity);
-                var pos = view.get(Components.Position, entity);
-                pos.x = final_pos[0] - drag.offset.x;
-                pos.y = final_pos[1] - drag.offset.y;
-                gamestate.world.remove(Components.Drag, entity);
+                const pos = view.getConst(Components.Position, entity);
+                var drag = view.get(Components.Drag, entity);
+                drag.end = .{ .x = final_pos[0] - drag.offset.x, .y = final_pos[1] - drag.offset.y};
+                // const drag = view.getConst(Components.Drag, entity);
+                // var pos = view.get(Components.Position, entity);
+                // pos.x = final_pos[0] - drag.offset.x;
+                // pos.y = final_pos[1] - drag.offset.y;
+                // gamestate.world.remove(Components.Drag, entity);
                 gamestate.world.addTypes(entity, .{Components.Request});
                 std.debug.print("Made request!\n", .{});
                 std.debug.print("Position x : {}, y : {}\n", .{pos.x, pos.y});
@@ -127,50 +130,4 @@ fn getFrontCard(gamestate: *GameState, pos: Components.Position) !Components.Pos
     }
 
     return min_pos;
-}
-
-/// Returns true if the card is the front card of the stack
-fn isFrontCard(gamestate: *GameState, pos: Components.Position, entity_pos_to_check: Components.Position) bool {
-    var min_pos: Components.Position = .{ .x = std.math.floatMax(f32), .y = std.math.floatMax(f32) };
-    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
-    var entityIter = view.entityIterator();
-    while (entityIter.next()) |entity| {
-        const entity_pos = view.getConst(Components.Position, entity);
-        if (utils.positionWithinArea(.{ .x = pos.x, .y = pos.y}, entity_pos)){
-            min_pos.y = @min(min_pos.y, entity_pos.y);
-        }
-    }
-
-    if (min_pos.y == entity_pos_to_check.y) {
-        return true;
-    }
-
-    return false;
-}
-
-/// Returns true if the card is contained in a stack
-/// Makes use of stack component and position
-/// 
-fn isContainedInStack(
-    gamestate: *GameState,
-    entity_pos_1: Components.Position,
-    entity_stack_1: Components.Stack,
-    ) bool {
-    
-    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
-    var entityIter = view.entityIterator();
-    while (entityIter.next()) |entity| {
-        const entity_pos = view.getConst(Components.Position, entity);
-        const entity_stack = view.getConst(Components.Stack, entity);
-
-        if (entity_pos.x == entity_pos_1.x and entity_pos.y == entity_pos_1.y) {
-            continue;
-        }
-
-        if (entity_pos.x == entity_stack_1.position.x and entity_stack.index < entity_stack_1.index){
-            return true;
-        }
-    }
-
-    return false;
 }

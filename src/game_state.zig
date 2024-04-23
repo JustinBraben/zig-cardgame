@@ -386,7 +386,7 @@ pub const GameState = struct {
         }
 
         const indexes_moveable = [_]usize {
-            0, 2, 5, 9, 14, 20, 27
+            0, 2, 5, 9, 14, 20, 27, 35, 44, 51
         };
 
         while (deck_index_set.count() < deck_index_list.items.len) {
