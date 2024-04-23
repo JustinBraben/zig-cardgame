@@ -357,7 +357,7 @@ pub const GameState = struct {
                 self.world.addOrReplace(entity, Components.Stack{
                     .index = 0,
                 });
-                self.world.addTypes(entity, .{Components.Tile, Components.Position, Components.Moveable});
+                self.world.addTypes(entity, .{Components.Tile, Components.Position});
                 // self.world.addTypes(entity, .{ Components.Tile, Components.Position });
                 // self.world.addTypes(entity, Components.Position{});
                 // self.world.addTypes(entity, Components.Moveable{}); // card is moveable
@@ -385,6 +385,10 @@ pub const GameState = struct {
             try deck_index_list.append(deck_index_count);
         }
 
+        const indexes_moveable = [_]usize {
+            0, 2, 5, 9, 14, 20, 27
+        };
+
         while (deck_index_set.count() < deck_index_list.items.len) {
             var rnd = std.rand.DefaultPrng.init(
                 blk: {
@@ -411,11 +415,22 @@ pub const GameState = struct {
                 if (entity_deck_order.index == index_1) {
                     entity_deck_order.index = index_2;
                     self.world.add(entity, Components.IsShuffled{}); // mark as shuffled
+
+                    for (indexes_moveable) |moveable_index| {
+                        if (index_2 == moveable_index) {
+                            self.world.addTypes(entity, .{Components.Moveable});
+                        }
+                    }
                     // log.info("successful shuffle", .{});
                 } else if (entity_deck_order.index == index_2) {
                     entity_deck_order.index = index_1;
                     self.world.add(entity, Components.IsShuffled{}); // mark as shuffled
                     // log.info("successful shuffle", .{});
+                    for (indexes_moveable) |moveable_index| {
+                        if (index_1 == moveable_index) {
+                            self.world.addTypes(entity, .{Components.Moveable});
+                        }
+                    }
                 }
             }
 
