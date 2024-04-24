@@ -47,6 +47,11 @@ pub fn run(gamestate: *GameState) void {
             const entity = gamestate.world.create();
             gamestate.world.add(entity, Components.Position{.x = current_x, .y = starting_y});
             gamestate.world.addTypes(entity, .{Components.OpenPile});
+            
+            // 53 is index of the back of the card
+            gamestate.world.addOrReplace(entity, Components.SpriteRenderer{
+                .index = 53,
+            });
             std.debug.print("Added an open pile!\n", .{});
         }
 

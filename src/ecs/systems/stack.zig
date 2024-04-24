@@ -21,6 +21,14 @@ pub fn run(gamestate: *GameState) void {
     var view_exclude_request = gamestate.world.view(.{ Components.Stack, Components.CardSuit, Components.CardValue, Components.Position, Components.Moveable}, .{Components.Request});
     var entity_exclude_request_Iter = view_exclude_request.entityIterator();
 
+    // Requirements for open piles
+    var view_open_piles = gamestate.world.view(.{Components.OpenPile, Components.Position}, .{});
+    var entity_open_piles_Iter = view_open_piles.entityIterator();
+
+    // Requirements for foundation piles
+    var view_foundation_piles = gamestate.world.view(.{Components.FoundationPile, Components.Position}, .{});
+    var entity_foundation_piles_Iter = view_foundation_piles.entityIterator();
+
     const tile_half_size = utils.getTileHalfSize();
 
     var last_moved_entity_pos: ?Components.Position = null;
@@ -85,6 +93,91 @@ pub fn run(gamestate: *GameState) void {
         }
 
         // TODO: Make a loop for foundation piles
+        while(entity_foundation_piles_Iter.next()) |entity_foundation_pile| {
+            const position_e2 = view_foundation_piles.getConst(Components.Position, entity_foundation_pile);
+
+            if (utils.positionWithinArea(position_e1_with_offset, position_e2)){
+                
+                if (gamestate.world.has(Components.CardSuit, entity_foundation_pile) and gamestate.world.has(Components.CardValue, entity_foundation_pile)) {
+                    const card_suit_e2 = gamestate.world.getConst(Components.CardSuit, entity_foundation_pile);
+                    const card_value_e2 = gamestate.world.getConst(Components.CardValue, entity_foundation_pile);
+                    if (isValidFoundationCardMove(card_suit_e1, card_value_e1, card_suit_e2, card_value_e2)) {
+                        std.debug.print("ValidFoundationCardMove! Between {} of {} and foundation pile\n", .{card_value_e1, card_suit_e1});
+                        position_e1.x = position_e2.x;
+                        position_e1.y = position_e2.y;
+                        stack_e1.index = 0;
+
+                        last_moved_entity_pos = .{ .x = position_e1.x, .y = position_e1.y };
+                        last_moved_entity_card_suit = card_suit_e1;
+                        last_moved_entity_card_value = card_value_e1;
+                        last_moved_entity_card_stack = stack_e1.*;
+
+                        gamestate.world.addOrReplace(entity_foundation_pile, card_suit_e1);
+                        gamestate.world.addOrReplace(entity_foundation_pile, card_value_e1);
+
+                        gamestate.world.removeIfExists(Components.Request, entity_with_request);
+                        gamestate.world.removeIfExists(Components.Drag, entity_with_request);
+
+                        // gamestate.world.removeIfExists(Components.SpriteRenderer, entity_foundation_pile);
+                        // gamestate.world.remove(Components.FoundationPile, entity_foundation_pile);
+                        // gamestate.world.removeIfExists(Components.Position, entity_foundation_pile);
+
+                        at_least_one_collision = true;
+                    }
+                }
+                else if (isValidFoundationCardMove(card_suit_e1, card_value_e1, null, null)) {
+                    std.debug.print("ValidFoundationCardMove! Between {} of {} and foundation pile\n", .{card_value_e1, card_suit_e1});
+                    position_e1.x = position_e2.x;
+                    position_e1.y = position_e2.y;
+                    stack_e1.index = 0;
+
+                    last_moved_entity_pos = .{ .x = position_e1.x, .y = position_e1.y };
+                    last_moved_entity_card_suit = card_suit_e1;
+                    last_moved_entity_card_value = card_value_e1;
+                    last_moved_entity_card_stack = stack_e1.*;
+
+                    gamestate.world.addOrReplace(entity_foundation_pile, card_suit_e1);
+                    gamestate.world.addOrReplace(entity_foundation_pile, card_value_e1);
+
+                    gamestate.world.removeIfExists(Components.Request, entity_with_request);
+                    gamestate.world.removeIfExists(Components.Drag, entity_with_request);
+
+                    // gamestate.world.removeIfExists(Components.SpriteRenderer, entity_foundation_pile);
+                    // gamestate.world.remove(Components.FoundationPile, entity_foundation_pile);
+                    // gamestate.world.removeIfExists(Components.Position, entity_foundation_pile);
+
+                    at_least_one_collision = true;
+                }
+            }
+        }
+
+        // Collision with open piles
+        while (entity_open_piles_Iter.next()) |entity_open_pile| {
+            const position_e2 = view_open_piles.getConst(Components.Position, entity_open_pile);
+            if (utils.positionWithinArea(position_e1_with_offset, position_e2)){
+                if (isValidOpenPileCardMove(card_value_e1)) {
+                    std.debug.print("ValidOpenPileCardMove! Between {} of {} and open pile\n", .{card_value_e1, card_suit_e1});
+                    position_e1.x = position_e2.x;
+                    position_e1.y = position_e2.y;
+                    stack_e1.index = 0;
+
+                    last_moved_entity_pos = .{ .x = position_e1.x, .y = position_e1.y };
+                    last_moved_entity_card_suit = card_suit_e1;
+                    last_moved_entity_card_value = card_value_e1;
+                    last_moved_entity_card_stack = stack_e1.*;
+
+                    gamestate.world.removeIfExists(Components.Request, entity_with_request);
+                    gamestate.world.removeIfExists(Components.Drag, entity_with_request);
+
+                    // gamestate.world.removeIfExists(Components.SpriteRenderer, entity_open_pile);
+                    gamestate.world.remove(Components.OpenPile, entity_open_pile);
+                    // gamestate.world.removeIfExists(Components.Position, entity_open_pile);
+
+                    at_least_one_collision = true;
+                }
+            }
+        }
+
     }
 
     // If no collisions were found, set the position of each entity with request to the drag start position
@@ -203,10 +296,56 @@ test "Testing isCardValidMove" {
     try testing.expect(!isCardValidMove(.Spades, .Queen, .Hearts, .Queen));
 }
 
-fn isValidFoundationCardMove(card_suit_e1: Components.CardSuit, card_value_e1: Components.CardValue, card_suit_e2: Components.CardSuit, card_value_e2: Components.CardValue) bool {
-    _ = card_suit_e1;
-    _ = card_value_e1;
-    _ = card_suit_e2;
-    _ = card_value_e2;
+fn isValidFoundationCardMove(card_suit_e1: Components.CardSuit, card_value_e1: Components.CardValue, card_suit_e2: ?Components.CardSuit, card_value_e2: ?Components.CardValue) bool {
+    if (card_suit_e2 == null and card_value_e2 == null) {
+        if (card_value_e1 == .Ace) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    switch (card_suit_e1) {
+        .Clubs => {
+            if (card_suit_e2 == .Clubs) {
+                if (@intFromEnum(card_value_e1) == @intFromEnum(card_value_e2.?) + 1) {
+                    return true;
+                }
+            }
+        },
+        .Spades => {
+            if (card_suit_e2 == .Spades) {
+                if (@intFromEnum(card_value_e1) == @intFromEnum(card_value_e2.?) + 1) {
+                    return true;
+                }
+            }
+        },
+        .Hearts => {
+            if (card_suit_e2 == .Hearts) {
+                if (@intFromEnum(card_value_e1) == @intFromEnum(card_value_e2.?) + 1) {
+                    return true;
+                }
+            }
+        },
+        .Diamonds => {
+            if (card_suit_e2 == .Diamonds) {
+                if (@intFromEnum(card_value_e1) == @intFromEnum(card_value_e2.?) + 1) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+/// Checks if the card can be moved to an open pile
+/// Currently any card or stack of cards can be moved to an open pile
+fn isValidOpenPileCardMove(card_value_e1: Components.CardValue) bool {
+    switch (card_value_e1) {
+        .King => return true,
+        else => return true,
+    }
+
     return false;
 }

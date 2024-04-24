@@ -543,7 +543,7 @@ pub const GameState = struct {
                 .index = 53,
             });
 
-            self.world.addTypes(entity, .{Components.Foundation});
+            self.world.addTypes(entity, .{Components.FoundationPile});
 
             foundation_pile_x += 1;
             // foundation_pile_x = @as(i32, @intCast(foundation_pile_count)) + 3;

@@ -62,5 +62,5 @@ pub const Stack = struct {
     index: u8 = 0,
 };
 
-pub const Foundation = struct {};
+pub const FoundationPile = struct {};
 pub const OpenPile = struct {}; 
