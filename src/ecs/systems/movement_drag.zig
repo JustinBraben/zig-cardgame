@@ -81,7 +81,7 @@ pub fn run(gamestate: *GameState) void {
             var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Drag, Components.Stack }, .{});
             var entityIter = view.entityIterator();
             while (entityIter.next()) |entity| {
-                const pos = view.getConst(Components.Position, entity);
+                // const pos = view.getConst(Components.Position, entity);
                 var drag = view.get(Components.Drag, entity);
                 drag.end = .{ .x = final_pos[0] - drag.offset.x, .y = final_pos[1] - drag.offset.y};
                 // const drag = view.getConst(Components.Drag, entity);
@@ -90,8 +90,8 @@ pub fn run(gamestate: *GameState) void {
                 // pos.y = final_pos[1] - drag.offset.y;
                 // gamestate.world.remove(Components.Drag, entity);
                 gamestate.world.addTypes(entity, .{Components.Request});
-                std.debug.print("Made request!\n", .{});
-                std.debug.print("Position x : {}, y : {}\n", .{pos.x, pos.y});
+                // std.debug.print("Made request!\n", .{});
+                std.debug.print("Request to Position x : {}, y : {}\n", .{drag.end.x, drag.end.y});
             }
         }
     }

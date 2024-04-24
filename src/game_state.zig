@@ -536,6 +536,8 @@ pub const GameState = struct {
             pos.x = (pos.x + (settings.pixel_spacing_x * @as(f32, @floatFromInt(tile.x)))) - 200.0;
             pos.y = pos.y + (utils.getTileFullSize()[1] * @as(f32, @floatFromInt(tile.y)) * 2.0);
 
+            std.debug.print("Foundation at x : {}, y : {}\n", .{pos.x, pos.y});
+
             self.world.addOrReplace(entity, pos);
             
             // 53 is index of the back of the card

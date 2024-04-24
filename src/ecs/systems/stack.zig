@@ -22,7 +22,7 @@ pub fn run(gamestate: *GameState) void {
     var entity_exclude_request_Iter = view_exclude_request.entityIterator();
 
     // Requirements for open piles
-    var view_open_piles = gamestate.world.view(.{Components.OpenPile, Components.Position}, .{});
+    var view_open_piles = gamestate.world.view(.{Components.OpenPile, Components.Position}, .{Components.FoundationPile});
     var entity_open_piles_Iter = view_open_piles.entityIterator();
 
     // Requirements for foundation piles
@@ -102,7 +102,7 @@ pub fn run(gamestate: *GameState) void {
                     const card_suit_e2 = gamestate.world.getConst(Components.CardSuit, entity_foundation_pile);
                     const card_value_e2 = gamestate.world.getConst(Components.CardValue, entity_foundation_pile);
                     if (isValidFoundationCardMove(card_suit_e1, card_value_e1, card_suit_e2, card_value_e2)) {
-                        std.debug.print("ValidFoundationCardMove! Between {} of {} and foundation pile\n", .{card_value_e1, card_suit_e1});
+                        std.debug.print("ValidFoundationCardMove to already occupied spot! Between {} of {} and foundation pile\n", .{card_value_e1, card_suit_e1});
                         position_e1.x = position_e2.x;
                         position_e1.y = position_e2.y;
                         stack_e1.index = 0;
@@ -112,8 +112,9 @@ pub fn run(gamestate: *GameState) void {
                         last_moved_entity_card_value = card_value_e1;
                         last_moved_entity_card_stack = stack_e1.*;
 
-                        gamestate.world.addOrReplace(entity_foundation_pile, card_suit_e1);
-                        gamestate.world.addOrReplace(entity_foundation_pile, card_value_e1);
+                        // TODO: remove, let the foundation pile system handle this
+                        // gamestate.world.addOrReplace(entity_foundation_pile, card_suit_e1);
+                        // gamestate.world.addOrReplace(entity_foundation_pile, card_value_e1);
 
                         gamestate.world.removeIfExists(Components.Request, entity_with_request);
                         gamestate.world.removeIfExists(Components.Drag, entity_with_request);
@@ -126,7 +127,7 @@ pub fn run(gamestate: *GameState) void {
                     }
                 }
                 else if (isValidFoundationCardMove(card_suit_e1, card_value_e1, null, null)) {
-                    std.debug.print("ValidFoundationCardMove! Between {} of {} and foundation pile\n", .{card_value_e1, card_suit_e1});
+                    std.debug.print("ValidFoundationCardMove to empty spot! Between {s} of {s} and foundation pile\n", .{@tagName(card_value_e1), @tagName(card_suit_e1)});
                     position_e1.x = position_e2.x;
                     position_e1.y = position_e2.y;
                     stack_e1.index = 0;
@@ -136,11 +137,14 @@ pub fn run(gamestate: *GameState) void {
                     last_moved_entity_card_value = card_value_e1;
                     last_moved_entity_card_stack = stack_e1.*;
 
-                    gamestate.world.addOrReplace(entity_foundation_pile, card_suit_e1);
-                    gamestate.world.addOrReplace(entity_foundation_pile, card_value_e1);
+                    // TODO: remove, let the foundation pile system handle this
+                    // gamestate.world.addOrReplace(entity_foundation_pile, card_suit_e1);
+                    // gamestate.world.addOrReplace(entity_foundation_pile, card_value_e1);
 
                     gamestate.world.removeIfExists(Components.Request, entity_with_request);
                     gamestate.world.removeIfExists(Components.Drag, entity_with_request);
+
+
 
                     // gamestate.world.removeIfExists(Components.SpriteRenderer, entity_foundation_pile);
                     // gamestate.world.remove(Components.FoundationPile, entity_foundation_pile);

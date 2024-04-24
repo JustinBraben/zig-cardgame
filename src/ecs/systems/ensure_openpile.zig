@@ -33,7 +33,7 @@ pub fn run(gamestate: *GameState) void {
         const lowest_position = utils.lowestPositionInPile(gamestate, position);
         var found_empty_pile = false;
 
-        var view_piles = gamestate.world.view(.{ Components.Position, Components.OpenPile }, .{});
+        var view_piles = gamestate.world.view(.{ Components.Position, Components.OpenPile }, .{ Components.FoundationPile});
         var entity_cards_Iter = view_piles.entityIterator();
         while(entity_cards_Iter.next()) |entity_card| {
             const position_e1 = view_piles.getConst(Components.Position, entity_card);

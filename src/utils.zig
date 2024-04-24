@@ -153,6 +153,9 @@ pub fn positionsEqual(a: Components.Position, b: Components.Position) bool {
     return a.x == b.x and a.y == b.y;
 }
 
+/// Determines the lowest position in a pile of cards
+/// Used to determine moveable cards
+/// Returns floatMax of f32 if no cards are found
 pub fn lowestPositionInPile(gamestate: *GameState, pos: Components.Position) Components.Position {
     var min_pos: Components.Position = .{ .x = pos.x, .y = std.math.floatMax(f32) };
     var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
@@ -168,4 +171,12 @@ pub fn lowestPositionInPile(gamestate: *GameState, pos: Components.Position) Com
     }
 
     return min_pos;
+}
+
+/// Determines the highest card value in a foundation pile
+pub fn highestValueCardInFoundation(gamestate: *GameState, foundation_pos: Components.Position) Components.CardValue {
+    _ = gamestate;
+    _ = foundation_pos;
+
+    return .King;
 }
