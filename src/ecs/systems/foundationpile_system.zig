@@ -29,26 +29,78 @@ pub fn run(gamestate: *GameState) void {
     // Ensure the rest of the cards at that position are not Moveable
     var view_foundation_piles = gamestate.world.view(.{ Components.Position, Components.FoundationPile }, .{});
     var entity_foundation_pile_Iter = view_foundation_piles.entityIterator();
-
     while(entity_foundation_pile_Iter.next()) |entity_foundation_pile| {
         const position_e1 = view_foundation_piles.getConst(Components.Position, entity_foundation_pile);
 
-        var view_cards = gamestate.world.view(.{ Components.Stack, Components.CardSuit, Components.CardValue, Components.Position, Components.Tile }, .{});
-        var entity_cards_Iter = view_cards.entityIterator();
+        const highest_card_value = utils.highestValueCardInFoundation(gamestate, position_e1);
 
-        var found_card_at_foundation_pile = false;
+        if (highest_card_value > 0){
+            var view_cards = gamestate.world.view(.{ Components.Stack, Components.CardSuit, Components.CardValue, Components.Position, Components.Tile }, .{});
+            var entity_cards_Iter = view_cards.entityIterator();
 
-        while(entity_cards_Iter.next()) |entity_card| {
-            const position_e2 = view_cards.getConst(Components.Position, entity_card);
-            if (utils.positionsEqual(position_e1, position_e2)) {
-                found_card_at_foundation_pile = true;
+            while(entity_cards_Iter.next()) |entity_card| {
+                const position_e2 = view_cards.getConst(Components.Position, entity_card);
+                const card_value = view_cards.getConst(Components.CardValue, entity_card);
+                const card_suit = view_cards.getConst(Components.CardSuit, entity_card);
+
+                if (utils.positionsEqual(position_e1, position_e2)) {
+
+                    if (!gamestate.world.has(Components.CardInFoundationPile, entity_card)) {
+                        gamestate.world.addTypes(entity_card, .{Components.CardInFoundationPile});
+                    }
+
+                    if (@intFromEnum(card_value) == highest_card_value) {
+                        gamestate.world.addOrReplace(entity_foundation_pile, card_value);
+                        gamestate.world.addOrReplace(entity_foundation_pile, card_suit);
+                        
+                        if (!gamestate.world.has(Components.Moveable, entity_card)) {
+                            gamestate.world.addTypes(entity_card, .{Components.Moveable});
+                        }
+                    }
+                    else {
+                        if (gamestate.world.has(Components.Moveable, entity_card)) {
+                            gamestate.world.remove(Components.Moveable, entity_card);
+                        }
+                    }
+
+                    // if (!gamestate.world.has(Components.CardInFoundationPile, entity_card)) {
+                    //     gamestate.world.addTypes(entity_card, .{Components.CardInFoundationPile});
+                    // }
+
+                    // if (@intFromEnum(card_value) < highest_card_value) {
+                    //     gamestate.world.removeIfExists(Components.Moveable, entity_card);
+                    // } else {
+                        
+                    //     if (!gamestate.world.has(Components.Moveable, entity_card)){
+                    //         // gamestate.world.addTypes(entity_card, .{Components.Moveable});
+                    //     }
+                    // }
+                }
             }
+        } else {
+            gamestate.world.removeIfExists(Components.CardValue, entity_foundation_pile);
+            gamestate.world.removeIfExists(Components.CardSuit, entity_foundation_pile);
         }
+        
+        // else {
+        //     if (!gamestate.world.has(Components.OpenFoundationPile, entity_foundation_pile)) {
+        //         gamestate.world.addTypes(entity_foundation_pile, .{Components.OpenFoundationPile});
+        //     }
+        // }
 
-        if (!found_card_at_foundation_pile) {
-            // std.debug.print("No cards found at foundation!\n", .{});
-            // gamestate.world.addTypes(entity_foundation_pile, .{Components.OpenFoundationPile});
-        }
+        // var found_card_at_foundation_pile = false;
+
+        // while(entity_cards_Iter.next()) |entity_card| {
+        //     const position_e2 = view_cards.getConst(Components.Position, entity_card);
+        //     if (utils.positionsEqual(position_e1, position_e2)) {
+        //         found_card_at_foundation_pile = true;
+        //     }
+        // }
+
+        // if (!found_card_at_foundation_pile) {
+        //     // std.debug.print("No cards found at foundation!\n", .{});
+        //     // gamestate.world.addTypes(entity_foundation_pile, .{Components.OpenFoundationPile});
+        // }
     }
 
     // Loop through foundation piles (not open ones)

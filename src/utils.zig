@@ -158,7 +158,8 @@ pub fn positionsEqual(a: Components.Position, b: Components.Position) bool {
 /// Returns floatMax of f32 if no cards are found
 pub fn lowestPositionInPile(gamestate: *GameState, pos: Components.Position) Components.Position {
     var min_pos: Components.Position = .{ .x = pos.x, .y = std.math.floatMax(f32) };
-    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+    var view = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, 
+    .{ Components.CardInFoundationPile, Components.FoundationPile });
     var entityIter = view.entityIterator();
     while (entityIter.next()) |entity| {
         const entity_pos = view.getConst(Components.Position, entity);
@@ -174,9 +175,18 @@ pub fn lowestPositionInPile(gamestate: *GameState, pos: Components.Position) Com
 }
 
 /// Determines the highest card value in a foundation pile
-pub fn highestValueCardInFoundation(gamestate: *GameState, foundation_pos: Components.Position) Components.CardValue {
-    _ = gamestate;
-    _ = foundation_pos;
+/// 0 means no card found
+pub fn highestValueCardInFoundation(gamestate: *GameState, foundation_pos: Components.Position) u8 {
+    var max_value: u8 = 0;
+    var view_cards = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack }, .{});
+    var entity_card_Iter = view_cards.entityIterator();
+    while (entity_card_Iter.next()) |entity| {
+        const card_value = view_cards.getConst(Components.CardValue, entity);
+        const card_pos = view_cards.getConst(Components.Position, entity);
+        if (positionsEqual(card_pos, foundation_pos)) {
+            max_value = @max(max_value, @intFromEnum(card_value));
+        }
+    }
 
-    return .King;
+    return max_value;
 }

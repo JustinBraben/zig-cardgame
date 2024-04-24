@@ -138,8 +138,10 @@ pub fn run(gamestate: *GameState) void {
                     last_moved_entity_card_stack = stack_e1.*;
 
                     // TODO: remove, let the foundation pile system handle this
-                    // gamestate.world.addOrReplace(entity_foundation_pile, card_suit_e1);
-                    // gamestate.world.addOrReplace(entity_foundation_pile, card_value_e1);
+                    // Only add the card to the foundation pile if it doesn't already have the component
+                    // if (!gamestate.world.has(Components.CardInFoundationPile, entity_with_request)) {
+                    //     gamestate.world.addTypes(entity_with_request, .{Components.CardInFoundationPile});
+                    // }
 
                     gamestate.world.removeIfExists(Components.Request, entity_with_request);
                     gamestate.world.removeIfExists(Components.Drag, entity_with_request);
