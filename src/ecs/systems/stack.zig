@@ -97,7 +97,7 @@ pub fn run(gamestate: *GameState) void {
             const position_e2 = view_foundation_piles.getConst(Components.Position, entity_foundation_pile);
 
             if (utils.positionWithinArea(position_e1_with_offset, position_e2)){
-                
+                // TODO: Need to make other cards beneath Not moveable
                 if (gamestate.world.has(Components.CardSuit, entity_foundation_pile) and gamestate.world.has(Components.CardValue, entity_foundation_pile)) {
                     const card_suit_e2 = gamestate.world.getConst(Components.CardSuit, entity_foundation_pile);
                     const card_value_e2 = gamestate.world.getConst(Components.CardValue, entity_foundation_pile);
