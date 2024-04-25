@@ -17,7 +17,6 @@ const EnsureOpenPile = @import("ensure_openpile.zig");
 
 const FoundationPileSystem = @import("foundationpile_system.zig");
 
-const Inspect = @import("inspect.zig");
 const ScanMouse = @import("scan_mouse.zig");
 
 const CameraFollow = @import("camera_follow.zig");
@@ -30,7 +29,6 @@ pub fn progress(gamestate: *GameState) !void {
 
     AnimationSprite.run(gamestate);
 
-    Inspect.run(gamestate);
     ScanMouse.run(gamestate);
 
     MovementDrag.run(gamestate);
