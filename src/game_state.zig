@@ -281,6 +281,10 @@ pub const GameState = struct {
         // Position deck of cards
         positionDeck(self);
 
+
+        // TODO: Create open piles, and fix system for it
+        // createOpenPiles(self);
+
         // Deal cards to table
     }
 
@@ -462,29 +466,6 @@ pub const GameState = struct {
         );
         var x: i32 = 0;
         var y: i32 = 0;
-        // while (group_iter_sorted.next()) |entity| {
-        //     // std.debug.print("Card at deck order {} is {any} of {any}\n", .{entity.deck_order.index, entity.card_value, entity.card_suit});
-        //     // std.debug.print("deck order is : {}\n", .{entity.deck_order.index});
-
-        //     entity.tile.*.x = x;
-        //     entity.tile.*.y = y;
-
-        //     const tile_to_position = utils.tileToPixelCoords(entity.tile.*);
-        //     entity.pos.*.x = tile_to_position.x;
-        //     entity.pos.*.y = tile_to_position.y;
-
-        //     x += 1;
-
-        //     if (x > 12) {
-        //         x = 0;
-        //         y += 1;
-        //     }
-        //     if (y > 3) {
-        //         y = 0;
-        //     }
-
-        //     // std.debug.print("Card at tile x: {}, y: {}, is {any} of {any}\n", .{entity.tile.*.x, entity.tile.*.y, entity.card_value.*, entity.card_suit.*});
-        // }
 
         while (group_iter_sorted.next()) |entity| {
             entity.tile.*.x = x;
@@ -494,16 +475,7 @@ pub const GameState = struct {
             const tile_to_position = utils.tileToPixelCoords(entity.tile.*);
             entity.pos.*.x = (tile_to_position.x + (settings.pixel_spacing_x * @as(f32, @floatFromInt(entity.tile.*.x)))) - 200.0;
             entity.pos.*.y = tile_to_position.y - (utils.getTileHalfSize()[1] * @as(f32, @floatFromInt(entity.tile.*.y)));
-
-            // if (x == y) {
-            //     self.world.addTypes(entity, .{ Components.Moveable }); // card is moveable
-            // }
-            // Here put the rest of the cards into the face down pile
-            // if (x > 6) {
-
-            // }
             
-            // 
             if (y + 1 > x) {
                 x += 1;
                 y = 0;
@@ -536,7 +508,7 @@ pub const GameState = struct {
             pos.x = (pos.x + (settings.pixel_spacing_x * @as(f32, @floatFromInt(tile.x)))) - 200.0;
             pos.y = pos.y + (utils.getTileFullSize()[1] * @as(f32, @floatFromInt(tile.y)) * 2.0);
 
-            std.debug.print("Foundation at x : {}, y : {}\n", .{pos.x, pos.y});
+            // std.debug.print("Foundation at x : {}, y : {}\n", .{pos.x, pos.y});
 
             self.world.addOrReplace(entity, pos);
             
@@ -550,6 +522,38 @@ pub const GameState = struct {
             foundation_pile_x += 1;
             // foundation_pile_x = @as(i32, @intCast(foundation_pile_count)) + 3;
             // foundation_pile_count += 1;
+        }
+    }
+
+    pub fn createOpenPiles(self: *GameState) void {
+        var x: i32 = 0;
+        const y: i32 = (0 * -1) + 3;
+
+        while (x < 10){
+
+            const entity = self.world.create();
+
+            const tile = Components.Tile{
+                .x = x,
+                .y = y,
+            };
+            self.world.addOrReplace(entity, tile);
+
+            // TODO: Make this a function? Magic numbers used same as in positionDeck
+            var pos = utils.tileToPixelCoords(tile);
+            pos.x = (pos.x + (settings.pixel_spacing_x * @as(f32, @floatFromInt(tile.x)))) - 200.0;
+            pos.y = pos.y + (utils.getTileFullSize()[1] * @as(f32, @floatFromInt(tile.y)) * 2.0);
+
+            self.world.addOrReplace(entity, pos);
+
+            // 53 is index of the back of the card
+            self.world.addOrReplace(entity, Components.SpriteRenderer{
+                .index = 53,
+            });
+
+            self.world.addTypes(entity, .{Components.OpenPile});
+
+            x += 1;
         }
     }
 

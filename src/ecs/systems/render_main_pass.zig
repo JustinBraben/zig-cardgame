@@ -70,87 +70,12 @@ pub fn renderSprites(gamestate: *GameState) !void {
         .mvp = zmath.transpose(gamestate.camera.renderTextureMatrix()),
     };
 
-    // {   // Draw sprites and order them by y position
-    //     try gamestate.batcher.begin(.{
-    //         .pipeline_handle = gamestate.pipeline_default,
-    //         .bind_group_handle = gamestate.bind_group_default,
-    //         .output_handle = gamestate.default_output.view_handle,
-    //     });
-    //     var position_order_group = gamestate.world.group(.{}, .{ Components.Position, Components.SpriteRenderer }, .{});
-    //     const SortPositionContext = struct {
-    //         fn sort(_: void, a: Components.Position, b: Components.Position) bool {
-    //             return a.y < b.y;
-    //         }
-    //     };
-    //     position_order_group.sort(Components.Position, {}, SortPositionContext.sort);
-    //     var group_iter_sorted = position_order_group.iterator();
-    //     while (group_iter_sorted.next()) |entity| {
-    //         const pos = position_order_group.getConst(Components.Position, entity);
-    //         const position = utils.toF32x4(pos);
-    //         const renderer = position_order_group.getConst(Components.SpriteRenderer, entity);
-    //         try gamestate.batcher.sprite(
-    //             position, 
-    //             &gamestate.default_texture,
-    //             gamestate.atlas.sprites[renderer.index],
-    //             .{
-    //                 .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
-    //                 .rotation = 0.0,
-    //                 .flip_x = false,
-    //                 .flip_y = false,
-    //             },
-    //         );
-    //     }
-    //     try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
-    // }
-
-    try gamestate.batcher.begin(.{
-        .pipeline_handle = gamestate.pipeline_default,
-        .bind_group_handle = gamestate.bind_group_default,
-        .output_handle = gamestate.default_output.view_handle,
-    });
-    {   // Draw sprites for foundation pile first
-        var foundation_pile_view = gamestate.world.view(.{ Components.Position, Components.SpriteRenderer, Components.FoundationPile }, .{});
-        var foundation_pile_iter = foundation_pile_view.entityIterator();
-        while (foundation_pile_iter.next()) |entity_foundation_pile| {
-            const pos = foundation_pile_view.getConst(Components.Position, entity_foundation_pile);
-            const position = utils.toF32x4(pos);
-            const renderer = foundation_pile_view.getConst(Components.SpriteRenderer, entity_foundation_pile);
-            try gamestate.batcher.sprite(
-                position, 
-                &gamestate.default_texture,
-                gamestate.atlas.sprites[renderer.index],
-                .{
-                    .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
-                    .rotation = 0.0,
-                    .flip_x = false,
-                    .flip_y = false,
-                },
-            );
-        }
-    }
-
-    {   // Then draw open piles
-        var open_pile_view = gamestate.world.view(.{ Components.Position, Components.SpriteRenderer, Components.OpenPile }, .{ });
-        var open_pile_iter = open_pile_view.entityIterator();
-        while (open_pile_iter.next()) |entity_open_pile| {
-            const pos = open_pile_view.getConst(Components.Position, entity_open_pile);
-            const position = utils.toF32x4(pos);
-            const renderer = open_pile_view.getConst(Components.SpriteRenderer, entity_open_pile);
-            try gamestate.batcher.sprite(
-                position, 
-                &gamestate.default_texture,
-                gamestate.atlas.sprites[renderer.index],
-                .{
-                    .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
-                    .rotation = 0.0,
-                    .flip_x = false,
-                    .flip_y = false,
-                },
-            );
-        }
-    }
-
-    {   // Then draw the cards on the table without drag/request in order
+    {   // Draw sprites and order them by y position
+        try gamestate.batcher.begin(.{
+            .pipeline_handle = gamestate.pipeline_default,
+            .bind_group_handle = gamestate.bind_group_default,
+            .output_handle = gamestate.default_output.view_handle,
+        });
         var position_order_group = gamestate.world.group(.{}, .{ Components.Position, Components.SpriteRenderer }, .{});
         const SortPositionContext = struct {
             fn sort(_: void, a: Components.Position, b: Components.Position) bool {
@@ -163,21 +88,96 @@ pub fn renderSprites(gamestate: *GameState) !void {
             const pos = position_order_group.getConst(Components.Position, entity);
             const position = utils.toF32x4(pos);
             const renderer = position_order_group.getConst(Components.SpriteRenderer, entity);
-            if (!gamestate.world.has(Components.FoundationPile, entity) and !gamestate.world.has(Components.OpenPile, entity) and !gamestate.world.has(Components.Drag, entity) and !gamestate.world.has(Components.Request, entity)){
-                try gamestate.batcher.sprite(
-                    position, 
-                    &gamestate.default_texture,
-                    gamestate.atlas.sprites[renderer.index],
-                    .{
-                        .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
-                        .rotation = 0.0,
-                        .flip_x = false,
-                        .flip_y = false,
-                    },
-                );
-            }
+            try gamestate.batcher.sprite(
+                position, 
+                &gamestate.default_texture,
+                gamestate.atlas.sprites[renderer.index],
+                .{
+                    .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
+                    .rotation = 0.0,
+                    .flip_x = false,
+                    .flip_y = false,
+                },
+            );
         }
+        try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
     }
+
+    // try gamestate.batcher.begin(.{
+    //     .pipeline_handle = gamestate.pipeline_default,
+    //     .bind_group_handle = gamestate.bind_group_default,
+    //     .output_handle = gamestate.default_output.view_handle,
+    // });
+    // {   // Draw sprites for foundation pile first
+    //     var foundation_pile_view = gamestate.world.view(.{ Components.Position, Components.SpriteRenderer, Components.FoundationPile }, .{});
+    //     var foundation_pile_iter = foundation_pile_view.entityIterator();
+    //     while (foundation_pile_iter.next()) |entity_foundation_pile| {
+    //         const pos = foundation_pile_view.getConst(Components.Position, entity_foundation_pile);
+    //         const position = utils.toF32x4(pos);
+    //         const renderer = foundation_pile_view.getConst(Components.SpriteRenderer, entity_foundation_pile);
+    //         try gamestate.batcher.sprite(
+    //             position, 
+    //             &gamestate.default_texture,
+    //             gamestate.atlas.sprites[renderer.index],
+    //             .{
+    //                 .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
+    //                 .rotation = 0.0,
+    //                 .flip_x = false,
+    //                 .flip_y = false,
+    //             },
+    //         );
+    //     }
+    // }
+
+    // {   // Then draw open piles
+    //     var open_pile_view = gamestate.world.view(.{ Components.Position, Components.SpriteRenderer, Components.OpenPile }, .{ Components.FoundationPile });
+    //     var open_pile_iter = open_pile_view.entityIterator();
+    //     while (open_pile_iter.next()) |entity_open_pile| {
+    //         const pos = open_pile_view.getConst(Components.Position, entity_open_pile);
+    //         const position = utils.toF32x4(pos);
+    //         const renderer = open_pile_view.getConst(Components.SpriteRenderer, entity_open_pile);
+    //         try gamestate.batcher.sprite(
+    //             position, 
+    //             &gamestate.default_texture,
+    //             gamestate.atlas.sprites[renderer.index],
+    //             .{
+    //                 .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
+    //                 .rotation = 0.0,
+    //                 .flip_x = false,
+    //                 .flip_y = false,
+    //             },
+    //         );
+    //     }
+    // }
+
+    // {   // Then draw the cards on the table without drag/request in order
+    //     var position_order_group = gamestate.world.group(.{}, .{ Components.Position, Components.SpriteRenderer }, .{});
+    //     const SortPositionContext = struct {
+    //         fn sort(_: void, a: Components.Position, b: Components.Position) bool {
+    //             return a.y < b.y;
+    //         }
+    //     };
+    //     position_order_group.sort(Components.Position, {}, SortPositionContext.sort);
+    //     var group_iter_sorted = position_order_group.iterator();
+    //     while (group_iter_sorted.next()) |entity| {
+    //         const pos = position_order_group.getConst(Components.Position, entity);
+    //         const position = utils.toF32x4(pos);
+    //         const renderer = position_order_group.getConst(Components.SpriteRenderer, entity);
+    //         if (!gamestate.world.has(Components.FoundationPile, entity) and !gamestate.world.has(Components.OpenPile, entity) and !gamestate.world.has(Components.Drag, entity) and !gamestate.world.has(Components.Request, entity)){
+    //             try gamestate.batcher.sprite(
+    //                 position, 
+    //                 &gamestate.default_texture,
+    //                 gamestate.atlas.sprites[renderer.index],
+    //                 .{
+    //                     .time = gamestate.game_time + @as(f32, @floatFromInt(renderer.order)),
+    //                     .rotation = 0.0,
+    //                     .flip_x = false,
+    //                     .flip_y = false,
+    //                 },
+    //             );
+    //         }
+    //     }
+    // }
 
     {   // Then draw the cards on the table with drag in order
         // var position_order_group = gamestate.world.group(.{}, .{ Components.Position, Components.SpriteRenderer, Components.Drag }, .{});
@@ -207,7 +207,7 @@ pub fn renderSprites(gamestate: *GameState) !void {
         //     }
         // }
     }
-    try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
+    // try gamestate.batcher.end(uniforms, gamestate.uniform_buffer_default);
 
     // TODO: Fix how we draw sprites to an output texture
     // This should not fail, because drawing sprites to the output texture should look different

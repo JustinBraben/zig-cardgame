@@ -45,6 +45,8 @@ pub fn run(gamestate: *GameState) void {
                 // TODO: Use stack component to determine what card to drag
             }
 
+            // TODO: Fix bug here that grabs cards beneath foundation stacks
+            // give cards in foundation stack a component to denote they are in a foundation stack
             var view_for_stack = gamestate.world.view(.{ Components.Position, Components.Tile, Components.CardSuit, Components.CardValue, Components.Stack, Components.Moveable }, .{});
             entityIter = view_for_stack.entityIterator();
             while (entityIter.next()) |entity| {
